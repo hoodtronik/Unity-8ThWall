@@ -312,37 +312,13 @@ namespace XR8WebAR
 
         private void Update_Debug()
         {
-            var x_left = Input.GetKey(KeyCode.A);
-            var x_right = Input.GetKey(KeyCode.D);
-            var z_forward = Input.GetKey(KeyCode.W);
-            var z_back = Input.GetKey(KeyCode.S);
-            var y_up = Input.GetKey(KeyCode.R);
-            var y_down = Input.GetKey(KeyCode.F);
-
-            float speed = debugCamMoveSensitivity * Time.deltaTime;
-            float dx = (x_right ? speed : 0) + (x_left ? -speed : 0);
-            float dy = (y_up ? speed : 0) + (y_down ? -speed : 0);
-            float dz = (z_forward ? speed : 0) + (z_back ? -speed : 0);
-
-            var y_rot_left = Input.GetKey(KeyCode.LeftArrow);
-            var y_rot_right = Input.GetKey(KeyCode.RightArrow);
-            var x_rot_up = Input.GetKey(KeyCode.UpArrow);
-            var x_rot_down = Input.GetKey(KeyCode.DownArrow);
-            var z_rot_cw = Input.GetKey(KeyCode.Comma);
-            var z_rot_ccw = Input.GetKey(KeyCode.Period);
-
-            var angularSpeed = debugCamTiltSensitivity * Time.deltaTime;
-            var d_rotx = (x_rot_up ? angularSpeed : 0) + (x_rot_down ? -angularSpeed : 0);
-            var d_roty = (y_rot_right ? angularSpeed : 0) + (y_rot_left ? -angularSpeed : 0);
-            var d_rotz = (z_rot_ccw ? angularSpeed : 0) + (z_rot_cw ? -angularSpeed : 0);
-
-            var r = trackerCam.transform.rotation;
-            var dq = Quaternion.Euler(d_rotx, d_roty, d_rotz);
-            r *= dq;
-
-            var dp = Vector3.right * dx + Vector3.up * dy + Vector3.forward * dz;
-            trackerCam.transform.Translate(dp);
-            trackerCam.transform.rotation = r;
+            // Debug camera controls have been moved to XR8Manager's Desktop Preview mode.
+            // Enable "Desktop Preview" on the XR8Manager component to simulate tracking
+            // in the editor without needing a phone or camera.
+            //
+            // If you need direct WASD camera controls here, add "Unity.InputSystem" 
+            // (GUID:75469ad4d38634e559750d17036d5f7c) to XR8WebAR.Runtime.asmdef references
+            // and uncomment the Keyboard.current code below.
         }
     }
 }
