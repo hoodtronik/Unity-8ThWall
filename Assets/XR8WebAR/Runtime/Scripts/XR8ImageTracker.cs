@@ -39,6 +39,16 @@ namespace XR8WebAR
         [SerializeField] private List<XR8ImageTarget> imageTargets;
         private Dictionary<string, XR8ImageTarget> targets = new Dictionary<string, XR8ImageTarget>();
 
+        /// <summary>Returns the configured image target IDs.</summary>
+        public List<string> GetTargetIds()
+        {
+            var ids = new List<string>();
+            if (imageTargets != null)
+                foreach (var t in imageTargets)
+                    if (!string.IsNullOrEmpty(t.id)) ids.Add(t.id);
+            return ids;
+        }
+
         private enum TrackerOrigin { CAMERA_ORIGIN, FIRST_TARGET_ORIGIN }
         [SerializeField] private TrackerOrigin trackerOrigin;
         [SerializeField] private List<string> trackedIds = new List<string>();

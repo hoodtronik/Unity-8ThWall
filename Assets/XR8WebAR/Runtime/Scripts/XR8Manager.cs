@@ -189,6 +189,8 @@ namespace XR8WebAR
 
         // --- Desktop Preview (Editor Only) ---
 #if UNITY_EDITOR
+        private string previewActiveTargetId = null;
+
         private IEnumerator StartDesktopPreview()
         {
             Debug.Log("[XR8Manager] Starting desktop preview...");
@@ -202,18 +204,27 @@ namespace XR8WebAR
                 xr8CameraComponent.cam.fieldOfView = 60;
             }
 
-            // If image tracking is enabled and we have a reference image,
-            // simulate a tracking event after a short delay
-            if (enableImageTracking && previewReferenceImage != null && imageTracker != null)
+            // If image tracking is enabled, simulate tracking found for the first target
+            if (enableImageTracking && imageTracker != null)
             {
-                yield return new WaitForSeconds(1f);
+                yield return new WaitForSeconds(0.5f);
 
-                // Send a fake tracking found event
-                Debug.Log("[XR8Manager] Desktop Preview: Simulating image found");
-                imageTracker.SendMessage("OnTrackingFound", "preview-target", SendMessageOptions.DontRequireReceiver);
+                // Get real target IDs from the image tracker
+                var targetIds = imageTracker.GetTargetIds();
+                if (targetIds.Count > 0)
+                {
+                    previewActiveTargetId = targetIds[0];
+                    Debug.Log("[XR8Manager] Desktop Preview: Simulating tracking found for '" + previewActiveTargetId + "'");
+                    imageTracker.SendMessage("OnTrackingFound", previewActiveTargetId, SendMessageOptions.DontRequireReceiver);
 
-                // Send continuous pose updates in editor
-                StartCoroutine(DesktopPreviewUpdateLoop());
+                    // Start continuous pose updates
+                    StartCoroutine(DesktopPreviewUpdateLoop());
+                }
+                else
+                {
+                    Debug.LogWarning("[XR8Manager] Desktop Preview: No image targets configured on XR8ImageTracker! " +
+                        "Click '+ Add' in the XR8ImageTracker inspector to add your targets.");
+                }
             }
 
             yield break;
@@ -221,17 +232,17 @@ namespace XR8WebAR
 
         private IEnumerator DesktopPreviewUpdateLoop()
         {
-            while (enableDesktopPreview && enableImageTracking && imageTracker != null)
+            while (enableDesktopPreview && previewActiveTargetId != null && imageTracker != null)
             {
-                // Create a fake tracking data CSV with the target at origin
-                // facing the camera
+                // Place the target 2 meters in front of the camera, facing it
                 var camT = arCamera.transform;
-                var targetPos = camT.position + camT.forward * 2f; // 2m in front
+                var targetPos = camT.position + camT.forward * 2f;
                 var fwd = -camT.forward;
                 var up = Vector3.up;
                 var right = Vector3.Cross(up, fwd).normalized;
 
-                string csv = "preview-target," +
+                // Build CSV: id,px,py,pz,fx,fy,fz,ux,uy,uz,rx,ry,rz
+                string csv = previewActiveTargetId + "," +
                     targetPos.x.ToString("F6") + "," +
                     targetPos.y.ToString("F6") + "," +
                     targetPos.z.ToString("F6") + "," +
@@ -247,7 +258,7 @@ namespace XR8WebAR
 
                 imageTracker.SendMessage("OnTrack", csv, SendMessageOptions.DontRequireReceiver);
 
-                yield return null; // Every frame
+                yield return null;
             }
         }
 #endif
