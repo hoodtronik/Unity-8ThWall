@@ -552,61 +552,100 @@ namespace XR8WebAR.Editor
             }
         }
 
+        private static Mesh _quadMesh;
+        private static Material _textureMat;
+
+        private static Mesh GetQuadMesh()
+        {
+            if (_quadMesh != null) return _quadMesh;
+            _quadMesh = new Mesh();
+            _quadMesh.vertices = new Vector3[]
+            {
+                new Vector3(-0.5f, 0, -0.5f),
+                new Vector3(0.5f, 0, -0.5f),
+                new Vector3(0.5f, 0, 0.5f),
+                new Vector3(-0.5f, 0, 0.5f)
+            };
+            _quadMesh.uv = new Vector2[]
+            {
+                new Vector2(0, 0),
+                new Vector2(1, 0),
+                new Vector2(1, 1),
+                new Vector2(0, 1)
+            };
+            _quadMesh.triangles = new int[] { 0, 2, 1, 0, 3, 2 };
+            _quadMesh.RecalculateNormals();
+            return _quadMesh;
+        }
+
+        private static Material GetTextureMaterial()
+        {
+            if (_textureMat != null) return _textureMat;
+            _textureMat = new Material(Shader.Find("Unlit/Transparent"));
+            if (_textureMat.shader == null || _textureMat.shader.name == "Hidden/InternalErrorShader")
+            {
+                // Fallback
+                _textureMat = new Material(Shader.Find("Sprites/Default"));
+            }
+            return _textureMat;
+        }
+
         private void DrawTargetInScene(Transform t, string id, Texture2D thumb)
         {
             var pos = t.position;
             var rot = t.rotation;
-            float size = 0.3f; // 30cm quad
 
-            // Draw wireframe box to show target bounds
-            Handles.color = new Color(0.2f, 0.8f, 1f, 0.8f);
-            Handles.matrix = Matrix4x4.TRS(pos, rot, Vector3.one);
-
-            // Draw a flat quad outline
-            Vector3[] corners = new Vector3[]
-            {
-                new Vector3(-size/2, 0, -size/2),
-                new Vector3(size/2, 0, -size/2),
-                new Vector3(size/2, 0, size/2),
-                new Vector3(-size/2, 0, size/2)
-            };
-            Handles.DrawLine(corners[0], corners[1]);
-            Handles.DrawLine(corners[1], corners[2]);
-            Handles.DrawLine(corners[2], corners[3]);
-            Handles.DrawLine(corners[3], corners[0]);
-            // Diagonal
-            Handles.DrawDottedLine(corners[0], corners[2], 3f);
-
-            // Draw image texture if available
             if (thumb != null)
             {
-                // Draw the texture as a flat quad using Handles
-                Handles.color = Color.white;
-
+                // Draw textured quad with the actual image
                 float aspect = (float)thumb.width / thumb.height;
-                float halfW = size / 2f * aspect;
-                float halfH = size / 2f;
+                float quadSize = 0.3f;
+                var scale = new Vector3(quadSize * aspect, 1f, quadSize);
+                var matrix = Matrix4x4.TRS(pos, rot, scale);
 
-                Vector3[] verts = new Vector3[]
-                {
-                    new Vector3(-halfW, 0.001f, -halfH),
-                    new Vector3(halfW, 0.001f, -halfH),
-                    new Vector3(halfW, 0.001f, halfH),
-                    new Vector3(-halfW, 0.001f, halfH)
-                };
+                var mat = GetTextureMaterial();
+                mat.mainTexture = thumb;
+                mat.SetPass(0);
+                Graphics.DrawMeshNow(GetQuadMesh(), matrix);
 
-                // Draw filled quad with outline
-                Handles.color = new Color(0.6f, 0.85f, 1f, 0.25f);
-                Handles.DrawAAConvexPolygon(verts);
-
+                // Draw border outline
                 Handles.color = new Color(0.2f, 0.8f, 1f, 1f);
-                Handles.DrawLine(verts[0], verts[1]);
-                Handles.DrawLine(verts[1], verts[2]);
-                Handles.DrawLine(verts[2], verts[3]);
-                Handles.DrawLine(verts[3], verts[0]);
+                Handles.matrix = Matrix4x4.TRS(pos, rot, Vector3.one);
+                float halfW = quadSize * aspect / 2f;
+                float halfH = quadSize / 2f;
+                Vector3[] outline = new Vector3[]
+                {
+                    new Vector3(-halfW, 0.002f, -halfH),
+                    new Vector3(halfW, 0.002f, -halfH),
+                    new Vector3(halfW, 0.002f, halfH),
+                    new Vector3(-halfW, 0.002f, halfH)
+                };
+                Handles.DrawLine(outline[0], outline[1]);
+                Handles.DrawLine(outline[1], outline[2]);
+                Handles.DrawLine(outline[2], outline[3]);
+                Handles.DrawLine(outline[3], outline[0]);
+                Handles.matrix = Matrix4x4.identity;
             }
-
-            Handles.matrix = Matrix4x4.identity;
+            else
+            {
+                // No thumbnail — draw wireframe placeholder
+                float size = 0.3f;
+                Handles.color = new Color(0.2f, 0.8f, 1f, 0.8f);
+                Handles.matrix = Matrix4x4.TRS(pos, rot, Vector3.one);
+                Vector3[] corners = new Vector3[]
+                {
+                    new Vector3(-size/2, 0, -size/2),
+                    new Vector3(size/2, 0, -size/2),
+                    new Vector3(size/2, 0, size/2),
+                    new Vector3(-size/2, 0, size/2)
+                };
+                Handles.DrawLine(corners[0], corners[1]);
+                Handles.DrawLine(corners[1], corners[2]);
+                Handles.DrawLine(corners[2], corners[3]);
+                Handles.DrawLine(corners[3], corners[0]);
+                Handles.DrawDottedLine(corners[0], corners[2], 3f);
+                Handles.matrix = Matrix4x4.identity;
+            }
 
             // Draw label
             var labelStyle = new GUIStyle(EditorStyles.boldLabel)
@@ -616,7 +655,7 @@ namespace XR8WebAR.Editor
             };
             Handles.Label(pos + Vector3.up * 0.2f, "📷 " + id, labelStyle);
 
-            // Draw a small icon sphere at the center
+            // Draw center dot
             Handles.color = new Color(0.2f, 0.8f, 1f, 0.6f);
             Handles.SphereHandleCap(0, pos, Quaternion.identity, 0.03f, EventType.Repaint);
         }
