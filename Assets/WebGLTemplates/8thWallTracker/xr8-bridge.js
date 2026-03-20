@@ -475,6 +475,128 @@ class XR8WorldBridge {
         }
     }
 }
+// ==========================================================================
+// XR8FaceBridge — 8th Wall Face Tracking → Unity
+// ==========================================================================
+class XR8FaceBridge {
+    constructor() {
+        this.trackerName = null;
+        this.config = {};
+        this.activeFaces = {};
+    }
+
+    start(config, trackerObjectName) {
+        this.config = config || {};
+        this.trackerName = trackerObjectName;
+        console.log('[XR8FaceBridge] Starting face tracking:', config);
+    }
+
+    stop() {
+        this.activeFaces = {};
+        console.log('[XR8FaceBridge] Stopped');
+    }
+
+    /**
+     * Called from xr8-face module's onUpdate.
+     * detail: { faces: [{ id, transform: { position, rotation }, ... }] }
+     */
+    onFaceFound(detail) {
+        var faceId = detail.id || 0;
+        this.activeFaces[faceId] = true;
+        console.log('[XR8FaceBridge] Face found:', faceId);
+        if (window.unityInstance) {
+            window.unityInstance.SendMessage(this.trackerName, 'OnFaceTrackingFound', String(faceId));
+        }
+    }
+
+    onFaceLost(detail) {
+        var faceId = detail.id || 0;
+        delete this.activeFaces[faceId];
+        console.log('[XR8FaceBridge] Face lost:', faceId);
+        if (window.unityInstance) {
+            window.unityInstance.SendMessage(this.trackerName, 'OnFaceTrackingLost', String(faceId));
+        }
+    }
+
+    /**
+     * Called every frame with face pose + expression data.
+     * face: {
+     *   id, transform: { position: {x,y,z}, rotation: {x,y,z,w} },
+     *   mouth: { openness }, leftEye: { openness }, rightEye: { openness },
+     *   smile: boolean
+     * }
+     */
+    onFaceUpdated(face) {
+        if (!window.unityInstance || !this.trackerName) return;
+        if (!face || !face.transform) return;
+
+        var pos = face.transform.position;
+        var rot = face.transform.rotation;
+        var faceId = face.id || 0;
+
+        // Expression data (default to 0.5 if not available)
+        var mouthOpen = (face.mouth && face.mouth.openness !== undefined) ? face.mouth.openness : 0.5;
+        var leftEyeOpen = (face.leftEye && face.leftEye.openness !== undefined) ? face.leftEye.openness : 1.0;
+        var rightEyeOpen = (face.rightEye && face.rightEye.openness !== undefined) ? face.rightEye.openness : 1.0;
+        var isSmiling = (face.smile) ? 1 : 0;
+
+        // CSV: faceId,px,py,pz,rx,ry,rz,rw,mouthOpen,leftEyeOpen,rightEyeOpen,isSmiling
+        var csv = faceId + ',' +
+            pos.x.toFixed(6) + ',' + pos.y.toFixed(6) + ',' + pos.z.toFixed(6) + ',' +
+            rot.x.toFixed(6) + ',' + rot.y.toFixed(6) + ',' + rot.z.toFixed(6) + ',' + rot.w.toFixed(6) + ',' +
+            mouthOpen.toFixed(4) + ',' + leftEyeOpen.toFixed(4) + ',' + rightEyeOpen.toFixed(4) + ',' + isSmiling;
+
+        window.unityInstance.SendMessage(this.trackerName, 'OnFacePose', csv);
+    }
+
+    /**
+     * Called with face landmark/attachment point positions.
+     * landmarks: { forehead: {x,y,z}, noseTip: {x,y,z}, ... }
+     */
+    onFaceLandmarks(faceId, landmarks) {
+        if (!window.unityInstance || !this.trackerName) return;
+
+        // Map camelCase JS names to PascalCase C# enum names
+        var nameMap = {
+            'forehead': 'Forehead',
+            'noseTip': 'NoseTip',
+            'noseBridge': 'NoseBridge',
+            'leftEye': 'LeftEye',
+            'rightEye': 'RightEye',
+            'leftEar': 'LeftEar',
+            'rightEar': 'RightEar',
+            'leftCheek': 'LeftCheek',
+            'rightCheek': 'RightCheek',
+            'chin': 'Chin',
+            'mouthCenter': 'MouthCenter',
+            'upperLip': 'UpperLip',
+            'lowerLip': 'LowerLip',
+            'leftEyebrow': 'LeftEyebrow',
+            'rightEyebrow': 'RightEyebrow'
+        };
+
+        // CSV: faceId,pointName,px,py,pz|pointName,px,py,pz|...
+        var parts = [];
+        var first = true;
+        for (var key in landmarks) {
+            if (!landmarks.hasOwnProperty(key)) continue;
+            var name = nameMap[key] || key;
+            var p = landmarks[key];
+            if (!p || p.x === undefined) continue;
+
+            var part = name + ',' + p.x.toFixed(6) + ',' + p.y.toFixed(6) + ',' + p.z.toFixed(6);
+            if (first) {
+                part = faceId + ',' + part;
+                first = false;
+            }
+            parts.push(part);
+        }
+
+        if (parts.length > 0) {
+            window.unityInstance.SendMessage(this.trackerName, 'OnFaceLandmarks', parts.join('|'));
+        }
+    }
+}
 
 
 // ============================================================================
@@ -483,3 +605,4 @@ class XR8WorldBridge {
 window.XR8CameraBridge = XR8CameraBridge;
 window.XR8TrackerBridge = XR8TrackerBridge;
 window.XR8WorldBridge = XR8WorldBridge;
+window.XR8FaceBridge = XR8FaceBridge;
