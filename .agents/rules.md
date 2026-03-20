@@ -34,3 +34,19 @@ Image target files go in `Assets/image-targets/`. The editor auto-discovers JSON
 
 ## 8. Update the Brain
 When finishing a session, **always update** `.agents/brain/walkthrough.md` with what was done and what's next.
+
+## 9. Update NotebookLM
+**ALWAYS** update the NotebookLM notebook after every new feature, fix, or significant change. Use the `nlm` CLI or MCP tools:
+```
+nlm source add text --notebook "Unity-8thWall XR8WebAR" --title "<description of change>" --text "<detailed notes>"
+```
+Notebook ID: `512ab6e1-87a7-4960-90dc-744c26d766ea`
+Include: what changed, why, files affected, and any new known issues.
+
+## 10. Triple-Capture Knowledge Pattern
+For **every significant thing learned** (new technique, pattern, fix, or integration), do ALL THREE:
+1. **Skill/Guide** — Create or update a skill in `.agents/skills/` (or workflow in `.agents/workflows/`)
+2. **Brain** — Update `.agents/brain/walkthrough.md` with the new knowledge
+3. **NotebookLM** — Add a source to the `Unity-8thWall XR8WebAR` notebook documenting it
+
+This ensures knowledge is never lost between sessions and can be retrieved via RAG.

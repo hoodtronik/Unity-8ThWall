@@ -89,7 +89,7 @@ namespace XR8WebAR
 
             if (trackerCam == null)
             {
-                trackerCam = GameObject.FindObjectOfType<XR8Camera>();
+                trackerCam = FindFirstObjectByType<XR8Camera>();
             }
 
             foreach (var target in imageTargets)

@@ -55,6 +55,7 @@ namespace XR8WebAR
 
         // === FACE TRACKING CONFIG ===
         [Header("Face Tracking (if enabled)")]
+        [SerializeField] private XR8FaceTracker faceTracker;
         [Tooltip("Maximum number of faces to track")]
         [SerializeField][Range(1, 3)] private int maxFaces = 1;
 
@@ -110,7 +111,7 @@ namespace XR8WebAR
                 xr8CameraComponent = arCamera.GetComponent<XR8Camera>();
 
             if (imageTracker == null && enableImageTracking)
-                imageTracker = FindObjectOfType<XR8ImageTracker>();
+                imageTracker = FindFirstObjectByType<XR8ImageTracker>();
 
             Application.targetFrameRate = targetFrameRate;
         }
@@ -190,24 +191,47 @@ namespace XR8WebAR
         // --- Desktop Preview (Editor Only) ---
 #if UNITY_EDITOR
         private string previewActiveTargetId = null;
+        private int previewTargetIndex = 0;
+        private float previewTargetDistance = 2f;
+        private Vector2 previewTargetOffset = Vector2.zero;
+        private bool previewIsTracking = false;
+        private bool previewUseMouse = true;
+
+        [Header("Desktop Preview Controls")]
+        [Tooltip("Use webcam feed as background (if available)")]
+        [SerializeField] private bool previewUseWebcam = false;
+        private WebCamTexture previewWebcam;
 
         private IEnumerator StartDesktopPreview()
         {
-            Debug.Log("[XR8Manager] Starting desktop preview...");
+            Debug.Log("[XR8Manager] ===== Desktop Preview Mode =====");
+            Debug.Log("[XR8Manager] Controls:");
+            Debug.Log("  [T] Toggle tracking on/off");
+            Debug.Log("  [Tab] Cycle through image targets");
+            Debug.Log("  [Mouse Drag] Move target position");
+            Debug.Log("  [Scroll] Adjust target distance");
+            Debug.Log("  [R] Reset target position");
+            Debug.Log("  [Esc] Lose tracking");
+            Debug.Log("========================================");
 
             isInitialized = true;
             OnEngineReady?.Invoke();
 
-            // Simulate camera ready
+            // Set camera FOV to match typical phone
             if (xr8CameraComponent != null)
             {
                 xr8CameraComponent.cam.fieldOfView = 60;
             }
 
-            // If image tracking is enabled, simulate tracking found for the first target
+            // Optional: start webcam for background
+            if (previewUseWebcam)
+            {
+                StartPreviewWebcam();
+            }
+
+            // Wait for ImageTracker to be ready
             if (enableImageTracking && imageTracker != null)
             {
-                // Wait for ImageTracker to finish its Start() and populate targets
                 float timeout = 5f;
                 while (!imageTracker.IsReady && timeout > 0)
                 {
@@ -221,35 +245,124 @@ namespace XR8WebAR
                     yield break;
                 }
 
-                // Get real target IDs from the image tracker
                 var targetIds = imageTracker.GetTargetIds();
                 if (targetIds.Count > 0)
                 {
                     previewActiveTargetId = targetIds[0];
-                    Debug.Log("[XR8Manager] Desktop Preview: Simulating tracking found for '" + previewActiveTargetId + "'");
-                    imageTracker.SendMessage("OnTrackingFound", previewActiveTargetId, SendMessageOptions.DontRequireReceiver);
-
-                    // Start continuous pose updates
-                    StartCoroutine(DesktopPreviewUpdateLoop());
+                    previewTargetIndex = 0;
+                    Debug.Log("[XR8Manager] Preview: Ready with " + targetIds.Count + " target(s). Press [T] to start tracking.");
+                    
+                    // Auto-start tracking for immediate preview
+                    yield return new WaitForSeconds(0.5f);
+                    PreviewStartTracking();
                 }
                 else
                 {
-                    Debug.LogWarning("[XR8Manager] Desktop Preview: No image targets configured on XR8ImageTracker! " +
+                    Debug.LogWarning("[XR8Manager] Desktop Preview: No image targets configured! " +
                         "Click '+ Add' in the XR8ImageTracker inspector to add your targets.");
                 }
+            }
+
+            // Start face tracking preview if enabled
+            if (enableFaceTracking && faceTracker != null)
+            {
+                faceTracker.StartDesktopPreview();
             }
 
             yield break;
         }
 
+        private void PreviewStartTracking()
+        {
+            if (previewIsTracking || previewActiveTargetId == null) return;
+            
+            previewIsTracking = true;
+            previewTargetDistance = 2f;
+            previewTargetOffset = Vector2.zero;
+
+            Debug.Log("[XR8Manager] Preview: Tracking FOUND -> '" + previewActiveTargetId + "'");
+            
+            // Fire tracking found event
+            imageTracker.SendMessage("OnTrackingFound", previewActiveTargetId, SendMessageOptions.DontRequireReceiver);
+            
+            // Start continuous pose updates
+            StartCoroutine(DesktopPreviewUpdateLoop());
+        }
+
+        private void PreviewStopTracking()
+        {
+            if (!previewIsTracking || previewActiveTargetId == null) return;
+
+            previewIsTracking = false;
+            Debug.Log("[XR8Manager] Preview: Tracking LOST -> '" + previewActiveTargetId + "'");
+            imageTracker.SendMessage("OnTrackingLost", previewActiveTargetId, SendMessageOptions.DontRequireReceiver);
+        }
+
+        private void PreviewCycleTarget()
+        {
+            var targetIds = imageTracker.GetTargetIds();
+            if (targetIds.Count <= 1) return;
+
+            bool wasTracking = previewIsTracking;
+            if (wasTracking) PreviewStopTracking();
+
+            previewTargetIndex = (previewTargetIndex + 1) % targetIds.Count;
+            previewActiveTargetId = targetIds[previewTargetIndex];
+            Debug.Log("[XR8Manager] Preview: Switched to target '" + previewActiveTargetId + "' (" + (previewTargetIndex + 1) + "/" + targetIds.Count + ")");
+
+            if (wasTracking) PreviewStartTracking();
+        }
+
+        private void StartPreviewWebcam()
+        {
+            var devices = WebCamTexture.devices;
+            if (devices.Length == 0)
+            {
+                Debug.LogWarning("[XR8Manager] Preview: No webcam found for background");
+                return;
+            }
+
+            previewWebcam = new WebCamTexture(devices[0].name, 1280, 720, 30);
+            previewWebcam.Play();
+            Debug.Log("[XR8Manager] Preview: Webcam started -> " + devices[0].name);
+
+            // Apply to camera background if possible
+            if (arCamera != null)
+            {
+                arCamera.clearFlags = CameraClearFlags.SolidColor;
+                arCamera.backgroundColor = Color.black;
+            }
+        }
+
         private IEnumerator DesktopPreviewUpdateLoop()
         {
-            while (enableDesktopPreview && previewActiveTargetId != null && imageTracker != null)
+            while (enableDesktopPreview && previewIsTracking && previewActiveTargetId != null && imageTracker != null)
             {
-                // Place the target 2 meters in front of the camera, facing it
+                // Handle mouse drag for target offset
+                if (previewUseMouse)
+                {
+                    if (Input.GetMouseButton(0)) // Left click drag
+                    {
+                        previewTargetOffset.x += Input.GetAxis("Mouse X") * 0.05f;
+                        previewTargetOffset.y += Input.GetAxis("Mouse Y") * 0.05f;
+                    }
+
+                    // Scroll to adjust distance
+                    float scroll = Input.GetAxis("Mouse ScrollWheel");
+                    if (Mathf.Abs(scroll) > 0.001f)
+                    {
+                        previewTargetDistance = Mathf.Clamp(previewTargetDistance - scroll * 2f, 0.3f, 10f);
+                    }
+                }
+
+                // Compute target pose relative to camera
                 var camT = arCamera.transform;
-                var targetPos = camT.position + camT.forward * 2f;
-                var fwd = -camT.forward;
+                var targetPos = camT.position 
+                    + camT.forward * previewTargetDistance
+                    + camT.right * previewTargetOffset.x
+                    + camT.up * previewTargetOffset.y;
+
+                var fwd = -camT.forward; // Target faces the camera
                 var up = Vector3.up;
                 var right = Vector3.Cross(up, fwd).normalized;
 
@@ -273,12 +386,63 @@ namespace XR8WebAR
                 yield return null;
             }
         }
+
+        private void DesktopPreviewHandleInput()
+        {
+            if (!enableDesktopPreview) return;
+
+            // [T] Toggle tracking
+            if (Input.GetKeyDown(KeyCode.T))
+            {
+                if (previewIsTracking)
+                    PreviewStopTracking();
+                else
+                    PreviewStartTracking();
+            }
+
+            // [Tab] Cycle targets
+            if (Input.GetKeyDown(KeyCode.Tab))
+            {
+                PreviewCycleTarget();
+            }
+
+            // [R] Reset position
+            if (Input.GetKeyDown(KeyCode.R))
+            {
+                previewTargetDistance = 2f;
+                previewTargetOffset = Vector2.zero;
+                Debug.Log("[XR8Manager] Preview: Position reset");
+            }
+
+            // [Esc] Stop tracking
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                PreviewStopTracking();
+            }
+        }
+
+        private void Update()
+        {
+            DesktopPreviewHandleInput();
+        }
+
+        private void CleanupPreviewWebcam()
+        {
+            if (previewWebcam != null && previewWebcam.isPlaying)
+            {
+                previewWebcam.Stop();
+            }
+        }
 #endif
 
         private void OnDestroy()
         {
             if (_instance == this)
                 _instance = null;
+
+#if UNITY_EDITOR
+            CleanupPreviewWebcam();
+#endif
 
 #if UNITY_WEBGL && !UNITY_EDITOR
             if (isInitialized)

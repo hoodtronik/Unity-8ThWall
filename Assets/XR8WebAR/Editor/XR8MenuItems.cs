@@ -43,7 +43,7 @@ namespace XR8WebAR.Editor
         static void CreateXR8Manager()
         {
             // Check if one already exists
-            if (Object.FindObjectOfType<XR8Manager>() != null)
+            if (Object.FindFirstObjectByType<XR8Manager>() != null)
             {
                 EditorUtility.DisplayDialog("XR8 Manager",
                     "An XR8 Manager already exists in the scene.", "OK");
@@ -114,7 +114,7 @@ namespace XR8WebAR.Editor
         [MenuItem("GameObject/XR8 WebAR/--- Complete AR Scene Setup ---", false, 50)]
         static void CreateFullARScene()
         {
-            if (Object.FindObjectOfType<XR8Manager>() != null)
+            if (Object.FindFirstObjectByType<XR8Manager>() != null)
             {
                 if (!EditorUtility.DisplayDialog("XR8 Scene Setup",
                     "XR8 components already exist in the scene. Create anyway?",
