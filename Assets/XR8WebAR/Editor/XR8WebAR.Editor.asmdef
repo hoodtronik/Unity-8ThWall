@@ -1,0 +1,14 @@
+{
+    "name": "XR8WebAR.Editor",
+    "rootNamespace": "XR8WebAR.Editor",
+    "references": ["XR8WebAR.Runtime"],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
