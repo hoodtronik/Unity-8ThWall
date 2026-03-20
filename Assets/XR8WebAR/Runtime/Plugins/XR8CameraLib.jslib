@@ -8,6 +8,41 @@ mergeInto(LibraryManager.library, {
         window.xr8Camera.start(window.xr8Tracker);
     },
 
+    WebGLStartXR8WithConfig: function(configJsonPtr) {
+        var configJson = UTF8ToString(configJsonPtr);
+        console.log('[XR8CameraLib] StartWithConfig:', configJson);
+
+        if (!window.xr8Camera) {
+            console.error('[XR8CameraLib] xr8Camera not found! Use the 8thWallTracker WebGL template.');
+            try {
+                window.unityInstance.SendMessage('XR8Manager', 'OnXR8Error', 'xr8Camera bridge not found');
+            } catch(e) {}
+            return;
+        }
+
+        try {
+            var config = JSON.parse(configJson);
+            window.xr8ManagerConfig = config;
+
+            // Start camera + tracker with combined config
+            window.xr8Camera.start(window.xr8Tracker, config);
+
+            // Notify Unity that engine is ready (after a tick for XR8 to init)
+            setTimeout(function() {
+                try {
+                    window.unityInstance.SendMessage('XR8Manager', 'OnXR8Ready');
+                } catch(e) {
+                    console.error('[XR8CameraLib] Failed to send OnXR8Ready:', e);
+                }
+            }, 500);
+        } catch(e) {
+            console.error('[XR8CameraLib] Config parse error:', e);
+            try {
+                window.unityInstance.SendMessage('XR8Manager', 'OnXR8Error', e.toString());
+            } catch(ex) {}
+        }
+    },
+
     WebGLStopXR8: function() {
         if (window.xr8Camera) {
             window.xr8Camera.stop();

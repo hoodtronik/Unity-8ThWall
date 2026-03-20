@@ -4,9 +4,10 @@
  * This replaces Imagine WebAR's obfuscated arcamera.js + itracker.js with a
  * transparent, readable implementation built on XR8's public API.
  *
- * Two main classes:
+ * Classes:
  *   XR8CameraBridge  — camera lifecycle, video texture, FOV, orientation
  *   XR8TrackerBridge — image target tracking, pose data forwarding to Unity
+ *   XR8WorldBridge   — world/SLAM tracking, surface detection, hit testing
  *
  * Data is forwarded to Unity via unityInstance.SendMessage(), using the same
  * CSV format that the C# scripts expect.
@@ -40,7 +41,9 @@ class XR8CameraBridge {
     }
 
     // Start XR8 engine and camera
-    start(trackerBridge) {
+    // trackerBridge: optional XR8TrackerBridge for image tracking
+    // config: optional combined config from XR8Manager (JSON object)
+    start(trackerBridge, config) {
         var self = this;
         var canvas = this.unityCanvas;
 
@@ -78,10 +81,23 @@ class XR8CameraBridge {
             }
         };
 
+        // Determine tracking settings from config or fallback
+        var disableWorldTracking = true;
+        var enableLighting = true;
+
+        if (config) {
+            // XR8Manager unified config
+            disableWorldTracking = !config.enableWorldTracking;
+            enableLighting = config.enableLighting !== false;
+        } else if (trackerBridge) {
+            // Legacy per-component config
+            disableWorldTracking = trackerBridge.disableWorldTracking;
+        }
+
         // Configure XR8
         var xrConfig = {
-            disableWorldTracking: trackerBridge ? trackerBridge.disableWorldTracking : true,
-            enableLighting: true,
+            disableWorldTracking: disableWorldTracking,
+            enableLighting: enableLighting,
             scale: 'responsive'
         };
 
@@ -99,9 +115,14 @@ class XR8CameraBridge {
             unityPipelineModule
         ];
 
-        // Add tracker pipeline module if present
-        if (trackerBridge) {
+        // Add image tracker pipeline module if present and enabled
+        if (trackerBridge && (!config || config.enableImageTracking !== false)) {
             modules.push(trackerBridge.getPipelineModule());
+        }
+
+        // Add world tracking bridge if enabled
+        if (config && config.enableWorldTracking && window.xr8World) {
+            modules.push(window.xr8World.getPipelineModule());
         }
 
         XR8.addCameraPipelineModules(modules);
@@ -333,7 +354,132 @@ class XR8TrackerBridge {
 
 
 // ============================================================================
+// XR8WorldBridge — World/SLAM tracking, surface detection, hit testing
+// ============================================================================
+class XR8WorldBridge {
+    constructor() {
+        this.trackerName = 'XR8WorldTracker'; // Unity GameObject name
+        this.isReady = false;
+        this.showMeshes = false;
+        this.surfaces = {};  // Active surfaces by ID
+    }
+
+    configure(unityObjectName, showMeshes) {
+        this.trackerName = unityObjectName || 'XR8WorldTracker';
+        this.showMeshes = showMeshes || false;
+        this.isReady = true;
+        console.log('[XR8WorldBridge] Configured. Object:', this.trackerName);
+    }
+
+    getPipelineModule() {
+        var self = this;
+        return {
+            name: 'unity-world-tracker-bridge',
+            onUpdate: function(e) {
+                self._onUpdate(e);
+            },
+            listeners: [
+                {
+                    event: 'reality.meshfound',
+                    process: function(e) { self._onMeshFound(e); }
+                },
+                {
+                    event: 'reality.meshupdated',
+                    process: function(e) { self._onMeshUpdated(e); }
+                },
+                {
+                    event: 'reality.meshlost',
+                    process: function(e) { self._onMeshLost(e); }
+                }
+            ]
+        };
+    }
+
+    // Perform a hit test from screen coordinates
+    hitTest(screenX, screenY) {
+        if (!XR8 || !XR8.XrController) return null;
+
+        try {
+            var hits = XR8.XrController.hitTest(screenX, screenY, ['FEATURE_POINT']);
+            if (hits && hits.length > 0) {
+                var hit = hits[0];
+                // Send hit result to Unity as CSV: posX,posY,posZ,normalX,normalY,normalZ
+                var csv = hit.position.x.toFixed(6) + ',' +
+                          hit.position.y.toFixed(6) + ',' +
+                          hit.position.z.toFixed(6) + ',' +
+                          (hit.normal ? hit.normal.x.toFixed(6) : '0') + ',' +
+                          (hit.normal ? hit.normal.y.toFixed(6) : '1') + ',' +
+                          (hit.normal ? hit.normal.z.toFixed(6) : '0');
+
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(self.trackerName, 'OnHitTestResult', csv);
+                }
+                return csv;
+            }
+        } catch(e) {
+            console.warn('[XR8WorldBridge] hitTest failed:', e);
+        }
+        return null;
+    }
+
+    _onUpdate(e) {
+        // Could forward 6DOF camera pose to Unity for world-space camera movement
+        if (e.processCpuResult && e.processCpuResult.reality) {
+            var r = e.processCpuResult.reality;
+            if (r.rotation && r.position) {
+                var pos = r.position;
+                var rot = r.rotation;
+                var csv = pos.x.toFixed(6) + ',' + pos.y.toFixed(6) + ',' + pos.z.toFixed(6) + ',' +
+                          rot.x.toFixed(6) + ',' + rot.y.toFixed(6) + ',' + rot.z.toFixed(6) + ',' + rot.w.toFixed(6);
+
+                if (window.unityInstance) {
+                    window.unityInstance.SendMessage(this.trackerName, 'OnCameraPose', csv);
+                }
+            }
+        }
+    }
+
+    _onMeshFound(event) {
+        var detail = event.detail || event;
+        var id = detail.id || 'surface-' + Object.keys(this.surfaces).length;
+        this.surfaces[id] = detail;
+
+        console.log('[XR8WorldBridge] Surface FOUND:', id);
+        if (window.unityInstance) {
+            var csv = id + ',' + detail.position.x.toFixed(6) + ',' +
+                      detail.position.y.toFixed(6) + ',' + detail.position.z.toFixed(6);
+            window.unityInstance.SendMessage(this.trackerName, 'OnSurfaceFound', csv);
+        }
+    }
+
+    _onMeshUpdated(event) {
+        var detail = event.detail || event;
+        var id = detail.id || Object.keys(this.surfaces)[0];
+        this.surfaces[id] = detail;
+
+        if (window.unityInstance) {
+            var csv = id + ',' + detail.position.x.toFixed(6) + ',' +
+                      detail.position.y.toFixed(6) + ',' + detail.position.z.toFixed(6);
+            window.unityInstance.SendMessage(this.trackerName, 'OnSurfaceUpdated', csv);
+        }
+    }
+
+    _onMeshLost(event) {
+        var detail = event.detail || event;
+        var id = detail.id || Object.keys(this.surfaces)[0];
+        delete this.surfaces[id];
+
+        console.log('[XR8WorldBridge] Surface LOST:', id);
+        if (window.unityInstance) {
+            window.unityInstance.SendMessage(this.trackerName, 'OnSurfaceLost', id);
+        }
+    }
+}
+
+
+// ============================================================================
 // Global initialization helpers (called from index.html)
 // ============================================================================
 window.XR8CameraBridge = XR8CameraBridge;
 window.XR8TrackerBridge = XR8TrackerBridge;
+window.XR8WorldBridge = XR8WorldBridge;
