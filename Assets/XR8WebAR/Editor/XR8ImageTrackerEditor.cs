@@ -28,11 +28,7 @@ namespace XR8WebAR.Editor
             public Texture2D thumbnail;
         }
 
-        private void OnEnable()
-        {
-            _target = (XR8ImageTracker)target;
-            ScanForImageTargets();
-        }
+
 
         public override void OnInspectorGUI()
         {
@@ -505,6 +501,124 @@ namespace XR8WebAR.Editor
             }
 
             EditorGUILayout.EndVertical();
+        }
+
+        // =========================================================================
+        // SCENE VIEW — draw image targets as visible textured quads
+        // =========================================================================
+
+        private void OnEnable()
+        {
+            _target = (XR8ImageTracker)target;
+            ScanForImageTargets();
+            SceneView.duringSceneGui += OnSceneGUI;
+        }
+
+        private void OnDisable()
+        {
+            SceneView.duringSceneGui -= OnSceneGUI;
+        }
+
+        private void OnSceneGUI(SceneView sceneView)
+        {
+            if (_target == null) return;
+
+            var imageTargetsProp = serializedObject.FindProperty("imageTargets");
+            if (imageTargetsProp == null) return;
+
+            for (int i = 0; i < imageTargetsProp.arraySize; i++)
+            {
+                var element = imageTargetsProp.GetArrayElementAtIndex(i);
+                var idProp = element.FindPropertyRelative("id");
+                var transformProp = element.FindPropertyRelative("transform");
+
+                if (transformProp.objectReferenceValue == null) continue;
+
+                var contentTransform = (Transform)transformProp.objectReferenceValue;
+                string targetId = idProp.stringValue;
+
+                // Find thumbnail for this target
+                Texture2D thumb = null;
+                foreach (var dt in discoveredTargets)
+                {
+                    if (dt.name == targetId && dt.thumbnail != null)
+                    {
+                        thumb = dt.thumbnail;
+                        break;
+                    }
+                }
+
+                DrawTargetInScene(contentTransform, targetId, thumb);
+            }
+        }
+
+        private void DrawTargetInScene(Transform t, string id, Texture2D thumb)
+        {
+            var pos = t.position;
+            var rot = t.rotation;
+            float size = 0.3f; // 30cm quad
+
+            // Draw wireframe box to show target bounds
+            Handles.color = new Color(0.2f, 0.8f, 1f, 0.8f);
+            Handles.matrix = Matrix4x4.TRS(pos, rot, Vector3.one);
+
+            // Draw a flat quad outline
+            Vector3[] corners = new Vector3[]
+            {
+                new Vector3(-size/2, 0, -size/2),
+                new Vector3(size/2, 0, -size/2),
+                new Vector3(size/2, 0, size/2),
+                new Vector3(-size/2, 0, size/2)
+            };
+            Handles.DrawLine(corners[0], corners[1]);
+            Handles.DrawLine(corners[1], corners[2]);
+            Handles.DrawLine(corners[2], corners[3]);
+            Handles.DrawLine(corners[3], corners[0]);
+            // Diagonal
+            Handles.DrawDottedLine(corners[0], corners[2], 3f);
+
+            // Draw image texture if available
+            if (thumb != null)
+            {
+                // Draw the texture as a flat quad using Handles
+                Handles.color = Color.white;
+
+                float aspect = (float)thumb.width / thumb.height;
+                float halfW = size / 2f * aspect;
+                float halfH = size / 2f;
+
+                Vector3[] verts = new Vector3[]
+                {
+                    new Vector3(-halfW, 0.001f, -halfH),
+                    new Vector3(halfW, 0.001f, -halfH),
+                    new Vector3(halfW, 0.001f, halfH),
+                    new Vector3(-halfW, 0.001f, halfH)
+                };
+
+                // Draw filled quad with outline
+                Handles.color = new Color(0.6f, 0.85f, 1f, 0.25f);
+                Handles.DrawAAConvexPolygon(verts);
+
+                Handles.color = new Color(0.2f, 0.8f, 1f, 1f);
+                Handles.DrawLine(verts[0], verts[1]);
+                Handles.DrawLine(verts[1], verts[2]);
+                Handles.DrawLine(verts[2], verts[3]);
+                Handles.DrawLine(verts[3], verts[0]);
+            }
+
+            Handles.matrix = Matrix4x4.identity;
+
+            // Draw label
+            var labelStyle = new GUIStyle(EditorStyles.boldLabel)
+            {
+                normal = { textColor = new Color(0.2f, 0.8f, 1f) },
+                fontSize = 12
+            };
+            Handles.Label(pos + Vector3.up * 0.2f, "📷 " + id, labelStyle);
+
+            // Draw a small icon sphere at the center
+            Handles.color = new Color(0.2f, 0.8f, 1f, 0.6f);
+            Handles.SphereHandleCap(0, pos, Quaternion.identity, 0.03f, EventType.Repaint);
         }
     }
 }
