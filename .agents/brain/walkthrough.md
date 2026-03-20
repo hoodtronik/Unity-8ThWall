@@ -89,3 +89,9 @@ cdfeb94 feat: custom inspector with auto-discovery
 2. Investigate desktop preview video playback
 3. Add more image targets / test multi-target
 4. Polish face tracking attachment point workflow
+5. **Gaussian Splat support** — integrate a mobile-optimized Gaussian splat renderer for AR. Reference repo: [mobile-gs](https://github.com/xiaobiaodu/mobile-gs) (mobile Gaussian splatting). Also consider [UnityGaussianSplatting](https://github.com/aras-p/UnityGaussianSplatting) for Unity integration. Key tasks:
+   - Evaluate mobile-gs for WebGL/mobile browser compatibility
+   - Add Gaussian splat renderer package to project
+   - Create `XR8GaussianSplatTarget` component that parents a splat to a tracked image/surface
+   - Ensure WebGL compatibility (splat rendering must work in WebGL builds)
+   - Test performance on mobile browsers

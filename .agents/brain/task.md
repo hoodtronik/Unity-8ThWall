@@ -13,4 +13,10 @@
 
 ## Pinned (Later)
 - [ ] Desktop preview mode — video doesn't play visually; needs deeper investigation
-- [ ] Visible image target preview in editor scene view
+- [x] Visible image target preview in editor scene view (always-on gizmos)
+
+## Roadmap
+- [ ] Gaussian Splat support — integrate [mobile-gs](https://github.com/xiaobiaodu/mobile-gs) splat renderer, create XR8GaussianSplatTarget component, test WebGL + mobile
+- [ ] Multi-target tracking test
+- [ ] Face tracking attachment point polish
+- [ ] WebGL build + phone test
