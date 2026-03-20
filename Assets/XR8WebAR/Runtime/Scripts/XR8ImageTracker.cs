@@ -68,6 +68,10 @@ namespace XR8WebAR
         private Transform dummyCamTransform;
         private int debugImageTargetIndex = 0;
         private bool isTrackerStopped = false;
+        private bool isReady = false;
+
+        /// <summary>True after Start() has initialized the targets dictionary.</summary>
+        public bool IsReady => isReady;
 
         [Space][SerializeField] private bool startStopOnEnableDisable = false;
         [SerializeField] private bool stopOnDestroy = true;
@@ -90,6 +94,11 @@ namespace XR8WebAR
 
             foreach (var target in imageTargets)
             {
+                if (string.IsNullOrEmpty(target.id) || target.transform == null)
+                {
+                    Debug.LogWarning("[XR8ImageTracker] Skipping target with empty ID or null transform");
+                    continue;
+                }
                 targets.Add(target.id, target);
                 if (target.transform.GetComponent<Renderer>() != null)
                     target.transform.GetComponent<Renderer>().enabled = false;
@@ -117,7 +126,8 @@ namespace XR8WebAR
                 dummyCamTransform = (new GameObject("XR8 Dummy Cam Transform")).transform;
             }
 
-            Debug.Log("[XR8ImageTracker] Tracker started");
+            isReady = true;
+            Debug.Log("[XR8ImageTracker] Tracker started (" + targets.Count + " targets ready)");
             yield break;
         }
 

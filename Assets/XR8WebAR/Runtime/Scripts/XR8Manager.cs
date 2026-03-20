@@ -207,7 +207,19 @@ namespace XR8WebAR
             // If image tracking is enabled, simulate tracking found for the first target
             if (enableImageTracking && imageTracker != null)
             {
-                yield return new WaitForSeconds(0.5f);
+                // Wait for ImageTracker to finish its Start() and populate targets
+                float timeout = 5f;
+                while (!imageTracker.IsReady && timeout > 0)
+                {
+                    yield return null;
+                    timeout -= Time.deltaTime;
+                }
+
+                if (!imageTracker.IsReady)
+                {
+                    Debug.LogError("[XR8Manager] Timed out waiting for XR8ImageTracker to initialize!");
+                    yield break;
+                }
 
                 // Get real target IDs from the image tracker
                 var targetIds = imageTracker.GetTargetIds();
