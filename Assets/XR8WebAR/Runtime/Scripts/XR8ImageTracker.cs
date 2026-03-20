@@ -114,6 +114,7 @@ namespace XR8WebAR
             Debug.Log("[XR8ImageTracker] Target IDs: " + serializedIds);
 
             Application.targetFrameRate = (int)trackerSettings.targetFrameRate;
+            trackerSettings.ApplyQualityPreset();
 
 #if !UNITY_EDITOR && UNITY_WEBGL
             StartXR8ImageTracker(serializedIds, name);
@@ -308,7 +309,7 @@ namespace XR8WebAR
                             Time.deltaTime * trackerSettings.smoothenFactor);
                         target.transform.rotation = Quaternion.Slerp(
                             target.transform.rotation, target.targetRot,
-                            Time.deltaTime * trackerSettings.smoothenFactor);
+                            Time.deltaTime * trackerSettings.rotationSmoothing);
                     }
                 }
 
@@ -319,7 +320,7 @@ namespace XR8WebAR
                         Time.deltaTime * trackerSettings.smoothenFactor);
                     firstTargetCurrentRot = Quaternion.Slerp(
                         firstTargetCurrentRot, firstTargetFinalRot,
-                        Time.deltaTime * trackerSettings.smoothenFactor);
+                        Time.deltaTime * trackerSettings.rotationSmoothing);
                     trackerCam.transform.position = Quaternion.Inverse(firstTargetCurrentRot) * -firstTargetCurrentPos;
                     trackerCam.transform.rotation = Quaternion.Inverse(firstTargetCurrentRot);
                 }
