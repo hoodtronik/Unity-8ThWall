@@ -1,0 +1,14 @@
+{
+    "name": "XR8WebAR.Runtime",
+    "rootNamespace": "XR8WebAR",
+    "references": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

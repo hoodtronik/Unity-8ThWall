@@ -1,0 +1,21 @@
+{
+  "name": "com.hoodtronik.xr8-webar",
+  "version": "1.0.0",
+  "displayName": "XR8 WebAR",
+  "description": "Unity WebGL addon for 8th Wall's self-hosted AR engine. Provides image tracking, camera management, and video background for WebAR experiences.",
+  "unity": "6000.0",
+  "keywords": [
+    "ar",
+    "webgl",
+    "webar",
+    "8thwall",
+    "xr8",
+    "image-tracking"
+  ],
+  "author": {
+    "name": "hoodtronik",
+    "url": "https://github.com/hoodtronik"
+  },
+  "license": "MIT",
+  "dependencies": {}
+}
