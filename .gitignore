@@ -34,3 +34,27 @@ crashlytics-build.properties
 # OS
 .DS_Store
 Thumbs.db
+
+# Premium plugins (Pro version only — private repo)
+# These are paid Unity Asset Store plugins not included in the open-source version.
+Assets/AmplifyShaderEditor/
+Assets/AnimationConverter/
+Assets/AnimationConverterExamples/
+Assets/GPUInstancer/
+Assets/MantisLODEditor/
+Assets/MeshAnimator/
+Assets/MeshBaker/
+Assets/NaughtyAttributes/
+Assets/Plugins/Demigiant/
+Assets/Resources/DOTweenSettings.asset
+Assets/___www.unityassetcollection.com___.txt
+
+# Plugin-generated project files
+GPUInstancer.Editor.csproj
+GPUInstancer.csproj
+MeshBakerCore.csproj
+MeshBakerEditor.csproj
+MeshBakerExamples.csproj
+NaughtyAttributes.Core.csproj
+NaughtyAttributes.Editor.csproj
+NaughtyAttributes.Test.csproj
