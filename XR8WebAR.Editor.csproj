@@ -67,6 +67,7 @@
     <Compile Include="Assets\XR8WebAR\Editor\ImageTrackabilityAnalyzer.cs" />
     <Compile Include="Assets\XR8WebAR\Editor\XR8ImageTrackerEditor.cs" />
     <Compile Include="Assets\XR8WebAR\Editor\GaussianSplatImporter.cs" />
+    <Compile Include="Assets\XR8WebAR\Editor\XR8SceneTemplates.cs" />
     <Compile Include="Assets\XR8WebAR\Editor\XR8ManagerEditor.cs" />
     <Compile Include="Assets\XR8WebAR\Editor\XR8MenuItems.cs" />
   </ItemGroup>

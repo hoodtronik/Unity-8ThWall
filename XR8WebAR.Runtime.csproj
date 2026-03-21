@@ -64,6 +64,7 @@
     <Compile Include="Assets\XR8WebAR\Runtime\Scripts\XR8Camera.cs" />
     <Compile Include="Assets\XR8WebAR\Runtime\Scripts\XR8TrackerSettings.cs" />
     <Compile Include="Assets\XR8WebAR\Runtime\Scripts\XR8WorldTracker.cs" />
+    <Compile Include="Assets\XR8WebAR\Runtime\Scripts\XR8CombinedTracker.cs" />
     <Compile Include="Assets\XR8WebAR\Runtime\Scripts\XR8ImageTracker.cs" />
     <Compile Include="Assets\XR8WebAR\Runtime\Scripts\XR8Manager.cs" />
     <Compile Include="Assets\XR8WebAR\Runtime\Scripts\XR8ScreenCapture.cs" />
@@ -76,6 +77,8 @@
   <ItemGroup>
     <None Include="Assets\XR8WebAR\Runtime\Shaders\GaussianSplat.shader" />
     <None Include="Assets\XR8WebAR\Runtime\XR8WebAR.Runtime.asmdef" />
+    <None Include="Assets\XR8WebAR\Runtime\Shaders\PortalInterior.shader" />
+    <None Include="Assets\XR8WebAR\Runtime\Shaders\PortalMask.shader" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
