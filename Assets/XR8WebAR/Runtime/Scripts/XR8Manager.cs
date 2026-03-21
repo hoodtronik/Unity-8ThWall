@@ -48,10 +48,16 @@ namespace XR8WebAR
 
         // === WORLD TRACKING CONFIG ===
         [Header("World Tracking (if enabled)")]
+        [SerializeField] private XR8WorldTracker worldTracker;
         [Tooltip("Enable surface detection and hit testing")]
         [SerializeField] private bool enableSurfaceDetection = true;
         [Tooltip("Show detected surface meshes (debug)")]
         [SerializeField] private bool showSurfaceMeshes = false;
+
+        // === COMBINED TRACKING ===
+        [Header("Combined Tracking (Image + World)")]
+        [Tooltip("Combined tracker for image-to-floor content placement")]
+        [SerializeField] private XR8CombinedTracker combinedTracker;
 
         // === FACE TRACKING CONFIG ===
         [Header("Face Tracking (if enabled)")]
@@ -112,6 +118,15 @@ namespace XR8WebAR
 
             if (imageTracker == null && enableImageTracking)
                 imageTracker = FindFirstObjectByType<XR8ImageTracker>();
+
+            if (worldTracker == null && enableWorldTracking)
+                worldTracker = FindFirstObjectByType<XR8WorldTracker>();
+
+            if (faceTracker == null && enableFaceTracking)
+                faceTracker = FindFirstObjectByType<XR8FaceTracker>();
+
+            if (combinedTracker == null && enableImageTracking && enableWorldTracking)
+                combinedTracker = FindFirstObjectByType<XR8CombinedTracker>();
 
             Application.targetFrameRate = targetFrameRate;
         }

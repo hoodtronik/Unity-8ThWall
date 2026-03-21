@@ -91,6 +91,18 @@ namespace XR8WebAR.Editor
             setupWorld = EditorGUILayout.ToggleLeft("🌍  World Tracking (SLAM, surfaces)", setupWorld);
             EditorGUILayout.Space(4);
             setupFace = EditorGUILayout.ToggleLeft("😊  Face Tracking (filters, effects)", setupFace);
+
+            // Show combined tracking hint
+            if (setupImage && setupWorld)
+            {
+                EditorGUILayout.Space(4);
+                EditorGUILayout.HelpBox(
+                    "✨ Combined Tracking enabled!\n" +
+                    "Image + World = floor detection beneath tracked images.\n" +
+                    "Perfect for gallery/museum AR experiences.",
+                    MessageType.Info);
+            }
+
             EditorGUILayout.Space(8);
 
             EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
@@ -152,11 +164,29 @@ namespace XR8WebAR.Editor
                     so.FindProperty("imageTracker").objectReferenceValue = trackerObj.GetComponent<XR8ImageTracker>();
                 }
 
-                // 4. Face Tracker
+                // 4. World Tracker
+                if (setupWorld)
+                {
+                    var worldObj = new GameObject("XR8WorldTracker");
+                    Undo.RegisterCreatedObjectUndo(worldObj, "XR8 Setup World");
+                    worldObj.AddComponent<XR8WorldTracker>();
+                    so.FindProperty("worldTracker").objectReferenceValue = worldObj.GetComponent<XR8WorldTracker>();
+                }
+
+                // 5. Face Tracker
                 if (setupFace)
                 {
                     var faceObj = SetupFaceTracker();
                     so.FindProperty("faceTracker").objectReferenceValue = faceObj.GetComponent<XR8FaceTracker>();
+                }
+
+                // 6. Combined Tracker (when Image + World both on)
+                if (setupImage && setupWorld)
+                {
+                    var combinedObj = new GameObject("XR8CombinedTracker");
+                    Undo.RegisterCreatedObjectUndo(combinedObj, "XR8 Setup Combined");
+                    combinedObj.AddComponent<XR8CombinedTracker>();
+                    so.FindProperty("combinedTracker").objectReferenceValue = combinedObj.GetComponent<XR8CombinedTracker>();
                 }
 
                 so.ApplyModifiedProperties();
@@ -180,6 +210,8 @@ namespace XR8WebAR.Editor
                     "• Main Camera (with XR8Camera)\n" +
                     "• XR8Manager (all references wired)\n" +
                     (setupImage ? "• XR8ImageTracker (target: '" + firstTargetId + "')\n" : "") +
+                    (setupWorld ? "• XR8WorldTracker (surface detection)\n" : "") +
+                    (setupImage && setupWorld ? "• XR8CombinedTracker (image-to-floor)\n" : "") +
                     (setupFace ? "• XR8FaceTracker\n" : "") +
                     (setupDesktopPreview ? "• Desktop Preview enabled\n" : "") +
                     (autoConfigureBuild ? "• WebGL build settings configured\n" : "") +
@@ -380,6 +412,21 @@ namespace XR8WebAR.Editor
                 {
                     var faceTracker = so.FindProperty("faceTracker").objectReferenceValue;
                     DrawCheck("Face Tracker assigned", faceTracker != null);
+                }
+
+                // World tracking
+                bool worldEnabled = so.FindProperty("enableWorldTracking").boolValue;
+                if (worldEnabled)
+                {
+                    var worldTracker = so.FindProperty("worldTracker").objectReferenceValue;
+                    DrawCheck("World Tracker assigned", worldTracker != null);
+                }
+
+                // Combined tracking
+                if (imageEnabled && worldEnabled)
+                {
+                    var combined = so.FindProperty("combinedTracker").objectReferenceValue;
+                    DrawCheck("Combined Tracker assigned", combined != null);
                 }
             }
 
