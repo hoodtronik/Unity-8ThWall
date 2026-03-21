@@ -2,41 +2,73 @@
 description: How to connect Unity MCP and set up the XR8WebAR project for WebAR development
 ---
 
-# Unity XR8WebAR Connect Workflow
+# Unity XR8WebAR — Connection & Setup Workflow
 
-## Prerequisites
-- Unity 6 LTS (6003.1.9f1 or later)
-- MCP for Unity package installed
-- 8th Wall engine binary at `Assets/WebGLTemplates/8thWallTracker/xr8.js`
+## IMPORTANT: Repository Setup
 
-## Steps
+This project has TWO git remotes:
+- **`origin`** = `https://github.com/hoodtronik/Unity-8ThWall.git` ← PUBLIC (free, no plugins)
+- **`pro`** = `https://github.com/hoodtronik/Unity-8ThWall-Pro.git` ← PRIVATE (with premium plugins)
 
-1. Open the Unity project at `Ar-Image-Template-8thWall/`
+**PRIMARY DEVELOPMENT REPO: `pro` (Unity-8ThWall-Pro)**
 
-2. Ensure MCP for Unity is installed (check `Window > MCP for Unity`)
+When committing and pushing:
+```bash
+# Always push to the Pro repo for active development
+git push pro main
 
-3. If the Unity MCP server isn't connecting, check the config at `~/.gemini/antigravity/mcp_config.json`
+# Only push to origin (public) for open-source releases
+# Make sure plugin folders are in .gitignore (they already are)
+git push origin main
+```
 
-4. Verify the project has the XR8WebAR addon at `Assets/XR8WebAR/`
+## Installed Premium Plugins (Pro Version)
 
-5. Check the scene has the required components:
-   - AR Camera Rig (Main Camera + XR8Camera)
-   - XR8Manager
-   - XR8ImageTracker
-   - If missing, use `GameObject > XR8 WebAR > Complete AR Scene Setup`
+| Plugin | Folder | Namespace/API |
+|--------|--------|---------------|
+| Mesh Baker | `Assets/MeshBaker/` | `MB3_MeshBaker`, `MB3_TextureBaker` |
+| Mantis LOD Editor Pro | `Assets/MantisLODEditor/` | `Mantis.LODEditor` |
+| Mesh Animator | `Assets/MeshAnimator/` | `MeshAnimator` |
+| GPU Instancer (Crowd) | `Assets/GPUInstancer/` | `GPUInstancer` |
+| Amplify Shader Editor | `Assets/AmplifyShaderEditor/` | Visual editor |
+| DOTween Pro | `Assets/Plugins/Demigiant/` | `DG.Tweening` |
+| Animation Converter | `Assets/AnimationConverter/` | Editor tool |
+| NaughtyAttributes | `Assets/NaughtyAttributes/` | `[Button]`, `[ShowIf]` |
 
-6. Image targets should be in `Assets/image-targets/`
+## Step 1 — Verify Unity MCP Connection
 
-7. The WebGL template is at `Assets/WebGLTemplates/8thWallTracker/`
-   - Set in Player Settings > WebGL > Resolution and Presentation > WebGL Template
-
-## Testing on Phone
 // turbo
-8. Build WebGL: `File > Build Settings > WebGL > Build`
-// turbo
-9. Serve locally: `npx serve Build/`
-10. Open the URL on your phone (must be same WiFi network)
+```bash
+# Check if Unity MCP server is connected
+# If not, open Unity MCP Tools window in Unity Editor
+```
 
-## Brain Location
-The project brain (handoff docs) is at `.agents/brain/` in the project root.
-Always read the walkthrough.md there before starting work.
+Use the `manage_editor` tool with `telemetry_ping` action to verify connection.
+
+## Step 2 — Read the Skill Guide
+
+Before doing ANY work on this project, read the skill file:
+
+```
+.agents/skills/unity-xr8-webar/SKILL.md
+```
+
+This contains the complete API reference, component list, plugin info, and important rules (like NO APP KEYS).
+
+## Step 3 — Check Scene State
+
+Use `manage_scene` with `get_hierarchy` to understand the current scene.
+Use `read_console` to check for any errors.
+
+## Step 4 — Development
+
+// turbo-all
+
+All pushes go to `pro` remote by default:
+```bash
+git add .
+git commit -m "your message"
+git push pro main
+```
+
+Only push to `origin` (public) for open-source releases — ensure plugins are gitignored.
