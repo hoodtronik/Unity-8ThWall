@@ -20,7 +20,7 @@
   </PropertyGroup>
   <PropertyGroup>
     <NoWarn>0169;USG0001</NoWarn>
-    <DefineConstants>UNITY_6000_3_9;UNITY_6000_3;UNITY_6000;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_4_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2018_2_OR_NEWER;UNITY_2018_3_OR_NEWER;UNITY_2018_4_OR_NEWER;UNITY_2019_1_OR_NEWER;UNITY_2019_2_OR_NEWER;UNITY_2019_3_OR_NEWER;UNITY_2019_4_OR_NEWER;UNITY_2020_1_OR_NEWER;UNITY_2020_2_OR_NEWER;UNITY_2020_3_OR_NEWER;UNITY_2021_1_OR_NEWER;UNITY_2021_2_OR_NEWER;UNITY_2021_3_OR_NEWER;UNITY_2022_1_OR_NEWER;UNITY_2022_2_OR_NEWER;UNITY_2022_3_OR_NEWER;UNITY_2023_1_OR_NEWER;UNITY_2023_2_OR_NEWER;UNITY_2023_3_OR_NEWER;UNITY_6000_0_OR_NEWER;UNITY_6000_1_OR_NEWER;UNITY_6000_2_OR_NEWER;UNITY_6000_3_OR_NEWER;PLATFORM_ARCH_64;UNITY_64;UNITY_INCLUDE_TESTS;ENABLE_AR;ENABLE_AUDIO;ENABLE_AUDIO_SCRIPTABLE_PIPELINE;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_EVENT_QUEUE;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_TEXTURE_STREAMING;ENABLE_VIRTUALTEXTURING;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_UNITYWEBREQUEST;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_UNITY_CONSENT;ENABLE_UNITY_CLOUD_IDENTIFIERS;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_NATIVE_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_EDITOR_GAME_SERVICES;ENABLE_UNITY_GAME_SERVICES_ANALYTICS_SUPPORT;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_GENERATE_NATIVE_PLUGINS_FOR_ASSEMBLIES_API;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_MANAGED_JOBS;ENABLE_MANAGED_TRANSFORM_JOBS;ENABLE_MANAGED_ANIMATION_JOBS;ENABLE_MANAGED_AUDIO_JOBS;ENABLE_MANAGED_UNITYTLS;INCLUDE_DYNAMIC_GI;ENABLE_SCRIPTING_GC_WBARRIERS;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_MARSHALLING_TESTS;ENABLE_VIDEO;ENABLE_NAVIGATION_OFFMESHLINK_TO_NAVMESHLINK;ENABLE_ACCELERATOR_CLIENT_DEBUGGING;ENABLE_ACCESSIBILITY_SCREEN_READER;TEXTCORE_1_0_OR_NEWER;EDITOR_ONLY_NAVMESH_BUILDER_DEPRECATED;PLATFORM_STANDALONE_WIN;PLATFORM_STANDALONE;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_NVIDIA;ENABLE_AMD;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_CLOUD_SERVICES_ENGINE_DIAGNOSTICS;ENABLE_OUT_OF_PROCESS_CRASH_HANDLER;ENABLE_CLUSTER_SYNC;ENABLE_CLUSTERINPUT;PLATFORM_UPDATES_TIME_OUTSIDE_OF_PLAYER_LOOP;GFXDEVICE_WAITFOREVENT_MESSAGEPUMP;PLATFORM_USES_EXPLICIT_MEMORY_MANAGER_INITIALIZER;PLATFORM_SUPPORTS_WAIT_FOR_PRESENTATION;PLATFORM_SUPPORTS_SPLIT_GRAPHICS_JOBS;ENABLE_MONO;NET_STANDARD_2_0;NET_STANDARD;NET_STANDARD_2_1;NETSTANDARD;NETSTANDARD2_1;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_UNITY_COLLECTIONS_CHECKS;ENABLE_BURST_AOT;UNITY_TEAM_LICENSE;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_DIRECTOR;ENABLE_LOCALIZATION;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_TILEMAP;ENABLE_TIMELINE;ENABLE_INPUT_SYSTEM;TEXTCORE_FONT_ENGINE_1_5_OR_NEWER;TEXTCORE_TEXT_ENGINE_1_5_OR_NEWER;TEXTCORE_FONT_ENGINE_1_6_OR_NEWER;CSHARP_7_OR_LATER;CSHARP_7_3_OR_NEWER</DefineConstants>
+    <DefineConstants>UNITY_6000_3_9;UNITY_6000_3;UNITY_6000;UNITY_5_3_OR_NEWER;UNITY_5_4_OR_NEWER;UNITY_5_5_OR_NEWER;UNITY_5_6_OR_NEWER;UNITY_2017_1_OR_NEWER;UNITY_2017_2_OR_NEWER;UNITY_2017_3_OR_NEWER;UNITY_2017_4_OR_NEWER;UNITY_2018_1_OR_NEWER;UNITY_2018_2_OR_NEWER;UNITY_2018_3_OR_NEWER;UNITY_2018_4_OR_NEWER;UNITY_2019_1_OR_NEWER;UNITY_2019_2_OR_NEWER;UNITY_2019_3_OR_NEWER;UNITY_2019_4_OR_NEWER;UNITY_2020_1_OR_NEWER;UNITY_2020_2_OR_NEWER;UNITY_2020_3_OR_NEWER;UNITY_2021_1_OR_NEWER;UNITY_2021_2_OR_NEWER;UNITY_2021_3_OR_NEWER;UNITY_2022_1_OR_NEWER;UNITY_2022_2_OR_NEWER;UNITY_2022_3_OR_NEWER;UNITY_2023_1_OR_NEWER;UNITY_2023_2_OR_NEWER;UNITY_2023_3_OR_NEWER;UNITY_6000_0_OR_NEWER;UNITY_6000_1_OR_NEWER;UNITY_6000_2_OR_NEWER;UNITY_6000_3_OR_NEWER;PLATFORM_ARCH_64;UNITY_64;UNITY_INCLUDE_TESTS;ENABLE_AR;ENABLE_AUDIO;ENABLE_AUDIO_SCRIPTABLE_PIPELINE;ENABLE_CACHING;ENABLE_CLOTH;ENABLE_EVENT_QUEUE;ENABLE_MICROPHONE;ENABLE_MULTIPLE_DISPLAYS;ENABLE_PHYSICS;ENABLE_TEXTURE_STREAMING;ENABLE_VIRTUALTEXTURING;ENABLE_LZMA;ENABLE_UNITYEVENTS;ENABLE_VR;ENABLE_WEBCAM;ENABLE_UNITYWEBREQUEST;ENABLE_WWW;ENABLE_CLOUD_SERVICES;ENABLE_CLOUD_SERVICES_ADS;ENABLE_CLOUD_SERVICES_USE_WEBREQUEST;ENABLE_UNITY_CONSENT;ENABLE_UNITY_CLOUD_IDENTIFIERS;ENABLE_CLOUD_SERVICES_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_NATIVE_CRASH_REPORTING;ENABLE_CLOUD_SERVICES_PURCHASING;ENABLE_CLOUD_SERVICES_ANALYTICS;ENABLE_CLOUD_SERVICES_BUILD;ENABLE_EDITOR_GAME_SERVICES;ENABLE_UNITY_GAME_SERVICES_ANALYTICS_SUPPORT;ENABLE_CLOUD_LICENSE;ENABLE_EDITOR_HUB_LICENSE;ENABLE_WEBSOCKET_CLIENT;ENABLE_GENERATE_NATIVE_PLUGINS_FOR_ASSEMBLIES_API;ENABLE_DIRECTOR_AUDIO;ENABLE_DIRECTOR_TEXTURE;ENABLE_MANAGED_JOBS;ENABLE_MANAGED_TRANSFORM_JOBS;ENABLE_MANAGED_ANIMATION_JOBS;ENABLE_MANAGED_AUDIO_JOBS;ENABLE_MANAGED_UNITYTLS;INCLUDE_DYNAMIC_GI;ENABLE_SCRIPTING_GC_WBARRIERS;PLATFORM_SUPPORTS_MONO;RENDER_SOFTWARE_CURSOR;ENABLE_MARSHALLING_TESTS;ENABLE_VIDEO;ENABLE_NAVIGATION_OFFMESHLINK_TO_NAVMESHLINK;ENABLE_ACCELERATOR_CLIENT_DEBUGGING;ENABLE_ACCESSIBILITY_SCREEN_READER;TEXTCORE_1_0_OR_NEWER;EDITOR_ONLY_NAVMESH_BUILDER_DEPRECATED;PLATFORM_STANDALONE_WIN;PLATFORM_STANDALONE;UNITY_STANDALONE_WIN;UNITY_STANDALONE;ENABLE_RUNTIME_GI;ENABLE_MOVIES;ENABLE_NETWORK;ENABLE_NVIDIA;ENABLE_AMD;ENABLE_CRUNCH_TEXTURE_COMPRESSION;ENABLE_CLOUD_SERVICES_ENGINE_DIAGNOSTICS;ENABLE_OUT_OF_PROCESS_CRASH_HANDLER;ENABLE_CLUSTER_SYNC;ENABLE_CLUSTERINPUT;PLATFORM_UPDATES_TIME_OUTSIDE_OF_PLAYER_LOOP;GFXDEVICE_WAITFOREVENT_MESSAGEPUMP;PLATFORM_USES_EXPLICIT_MEMORY_MANAGER_INITIALIZER;PLATFORM_SUPPORTS_WAIT_FOR_PRESENTATION;PLATFORM_SUPPORTS_SPLIT_GRAPHICS_JOBS;ENABLE_MONO;NET_STANDARD_2_0;NET_STANDARD;NET_STANDARD_2_1;NETSTANDARD;NETSTANDARD2_1;ENABLE_PROFILER;DEBUG;TRACE;UNITY_ASSERTIONS;UNITY_EDITOR;UNITY_EDITOR_64;UNITY_EDITOR_WIN;ENABLE_UNITY_COLLECTIONS_CHECKS;ENABLE_BURST_AOT;UNITY_TEAM_LICENSE;ENABLE_CUSTOM_RENDER_TEXTURE;ENABLE_DIRECTOR;ENABLE_LOCALIZATION;ENABLE_SPRITES;ENABLE_TERRAIN;ENABLE_TILEMAP;ENABLE_TIMELINE;ENABLE_INPUT_SYSTEM;TEXTCORE_FONT_ENGINE_1_5_OR_NEWER;TEXTCORE_TEXT_ENGINE_1_5_OR_NEWER;TEXTCORE_FONT_ENGINE_1_6_OR_NEWER;GPU_INSTANCER;AMPLIFY_SHADER_EDITOR;DOTWEEN;CSHARP_7_OR_LATER;CSHARP_7_3_OR_NEWER</DefineConstants>
     <AllowUnsafeBlocks>False</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -61,7 +61,105 @@
     <Analyzer Include="C:\Program Files\Unity\Hub\Editor\6000.3.9f1\Editor\Data\Tools\BuildPipeline\Unity.SourceGenerators\Unity.UIToolkit.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\MeshAnimator\Examples\Example_CrowdAI\Scripts\AI_Unit.cs" />
+    <Compile Include="Assets\MantisLODEditor\Common\MantisLODEditorUtility.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Core\MeshAnimatorBase.cs" />
+    <Compile Include="Assets\MantisLODEditor\Common\MantisLODEditorProfessional.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Example_CrowdAI\Scripts\MouseOrbitImproved.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Example_CrowdAI\Scripts\ArmySpawner.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Example_CrowdAI\Scripts\DelayedDestroy.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Meshes\BirdModel\Scripts\BoidComponent.cs" />
+    <Compile Include="Assets\MantisLODEditor\Demo\Scripts\RotateMe.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Example_PerformanceComparison\AnimatorStateMachine.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Core\MeshAnimatorManager.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Core\ExposedTransformCrossfade.cs" />
+    <Compile Include="Assets\MantisLODEditor\Demo\Scripts\MoveMe.cs" />
+    <Compile Include="Assets\MantisLODEditor\Common\ProgressiveMesh.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Example_PerformanceComparison\Scripts\PerformanceTester.cs" />
+    <Compile Include="Assets\MantisLODEditor\Common\Mantis_Mesh.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Example_CrowdAI\Scripts\AI_Manager.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\ShaderAnimated\ShaderMeshAnimation.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Snapshot\SnapshotMeshAnimation.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\ShaderAnimated\ShaderMeshAnimator.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Snapshot\SnapshotMeshFrameData.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Meshes\HumanModel\Scripts\SetRandomColor.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Example_CrowdAI\Scripts\PlayerControlled.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Compatibility\MecanimMeshAnimatorController.cs" />
+    <Compile Include="Assets\MantisLODEditor\Common\Lod_Mesh.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Core\MeshFrameDataBase.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Abstraction\IMeshAnimation.cs" />
+    <Compile Include="Assets\MeshAnimator\Examples\Example_Crowd\Scripts\CrowdSpawner.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Snapshot\SnapshotMeshAnimator.cs" />
     <Compile Include="Assets\TutorialInfo\Scripts\Readme.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Core\RootMotionMode.cs" />
+    <Compile Include="Assets\MantisLODEditor\Runtime\ProgressiveMeshRuntime.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Utilities\PooledDictionary.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Utilities\MatrixUtils.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Utilities\AllocatedArray.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Utilities\Comparers.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Core\MeshNormalMode.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Abstraction\IMeshAnimator.cs" />
+    <Compile Include="Assets\MantisLODEditor\Plugins\Managed\MantisLOD.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Core\MeshAnimationEvent.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Core\MeshAnimationBase.cs" />
+    <Compile Include="Assets\MeshAnimator\Scripts\Common\Utilities\GenericObjectPool.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Assets\MeshAnimator\Shaders\URP\DepthNormalsPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator-Mobile-Diffuse-ColoredShirtExample.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\LitInput.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimatorStandardMeta.cginc" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator-Unlit-Color.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator-Standard.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\LitGBufferPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\SimpleLitMetaPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\BakedLitInput.hlsl" />
+    <None Include="Assets\___www.unityassetcollection.com___.txt" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator-Normal-Diffuse.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\SimpleLitDepthNormalsPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\ComplexLit.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\UnlitDepthNormalsPass.hlsl" />
+    <None Include="Assets\MeshBaker\Resources\Shaders\AlbedoShader.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator.cginc" />
+    <None Include="Assets\AnimationConverterExamples\Example2_Reuse_Animations\Example2_ReadMe.txt" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\UnlitForwardPass.hlsl" />
+    <None Include="Assets\MeshBaker\Release Notes.txt" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\BakedLitDepthNormalsPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator-Mobile-Diffuse.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\SimpleLit.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator-Unlit-Texture.shader" />
+    <None Include="Assets\MeshBaker\Resources\Shaders\UnlitWithAlpha.shader" />
+    <None Include="Assets\AnimationConverterExamples\Example1_MoCap_to_Generic\Example1_ReadMe.txt" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator-Unlit-AlphaTest.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\SimpleLitForwardPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\SimpleLitGBufferPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimatorStandardDeferred.cginc" />
+    <None Include="Assets\MantisLODEditor\Plugins\x86_64\MantisLOD.dll" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\Lit.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\DepthOnlyPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator-Mobile-BumpSpec.shader" />
+    <None Include="Assets\MeshBaker\Resources\Shaders\NormalMapShaderSwizzle.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\BakedLitForwardPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\LitMetaPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimatorStandardBase.cginc" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\LitForwardPass.hlsl" />
+    <None Include="Assets\AnimationConverter\Plugins\Application\AnimationConverterApplication.dll" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\BakedLit.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\UnlitMetaPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimatorStandardForward.cginc" />
+    <None Include="Assets\MeshBaker\MeshBakerWorkingFolder\DONT_DELETE.txt" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\LitDepthNormalsPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\SimpleLitInput.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\ShadowCasterPass.hlsl" />
+    <None Include="Assets\MeshBaker\README.txt" />
+    <None Include="Assets\MeshBaker\Resources\Shaders\NormalMapShader.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\BakedLitMetaPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\UnlitGBufferPass.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\Unlit.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimator-Unlit-Alpha.shader" />
+    <None Include="Assets\MeshAnimator\Shaders\URP\UnlitInput.hlsl" />
+    <None Include="Assets\MeshAnimator\Shaders\MeshAnimatorStandardShadow.cginc" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -642,6 +740,22 @@
     </Reference>
     <Reference Include="Microsoft.CodeAnalysis">
       <HintPath>Assets\Plugins\Roslyn\Microsoft.CodeAnalysis.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="AnimationConverterApplication">
+      <HintPath>Assets\AnimationConverter\Plugins\Application\AnimationConverterApplication.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DOTween">
+      <HintPath>Assets\Plugins\Demigiant\DOTween\DOTween.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DOTweenPro">
+      <HintPath>Assets\Plugins\Demigiant\DOTweenPro\DOTweenPro.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="DemiLib">
+      <HintPath>Assets\Plugins\Demigiant\DemiLib\Core\DemiLib.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="UnityEditor.iOS.Extensions.Xcode">
@@ -1370,13 +1484,53 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="Assembly-CSharp-firstpass.csproj">
+      <Project>{AC544419-8547-C0DC-4EC1-50957A025579}</Project>
+      <Name>Assembly-CSharp-firstpass</Name>
+    </ProjectReference>
+    <ProjectReference Include="GPUInstancer.Editor.csproj">
+      <Project>{C8300A25-F08E-9572-A3CE-B056BDAAE770}</Project>
+      <Name>GPUInstancer.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="MeshBakerEditor.csproj">
+      <Project>{387D69BD-CD9F-F01C-0707-D36CD421F537}</Project>
+      <Name>MeshBakerEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="GPUInstancer.csproj">
+      <Project>{262706A9-CC7F-0E65-C70E-960A8D2E46A9}</Project>
+      <Name>GPUInstancer</Name>
+    </ProjectReference>
     <ProjectReference Include="XR8WebAR.Runtime.csproj">
       <Project>{91CB1125-7E68-48C8-7316-4799BC68DC7B}</Project>
       <Name>XR8WebAR.Runtime</Name>
     </ProjectReference>
+    <ProjectReference Include="MeshBakerCore.csproj">
+      <Project>{AE280BE3-AE8D-9703-0984-6FD5D595823C}</Project>
+      <Name>MeshBakerCore</Name>
+    </ProjectReference>
+    <ProjectReference Include="AmplifyShaderEditor.csproj">
+      <Project>{ABE32302-306C-CC1A-C301-62099FA0585C}</Project>
+      <Name>AmplifyShaderEditor</Name>
+    </ProjectReference>
+    <ProjectReference Include="NaughtyAttributes.Test.csproj">
+      <Project>{AC53C681-E696-1D6C-55BA-38AF283F1E51}</Project>
+      <Name>NaughtyAttributes.Test</Name>
+    </ProjectReference>
+    <ProjectReference Include="NaughtyAttributes.Core.csproj">
+      <Project>{734C9AA0-550F-5D6C-D72F-3D5FC58B3806}</Project>
+      <Name>NaughtyAttributes.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="XR8WebAR.Editor.csproj">
       <Project>{F3778513-E0FC-F01D-52B7-BFAFE9AD4D54}</Project>
       <Name>XR8WebAR.Editor</Name>
+    </ProjectReference>
+    <ProjectReference Include="MeshBakerExamples.csproj">
+      <Project>{AC720739-443D-3613-17F5-434D99759AF0}</Project>
+      <Name>MeshBakerExamples</Name>
+    </ProjectReference>
+    <ProjectReference Include="NaughtyAttributes.Editor.csproj">
+      <Project>{1E8EE77D-09EF-A6EE-BE62-06F75225B586}</Project>
+      <Name>NaughtyAttributes.Editor</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

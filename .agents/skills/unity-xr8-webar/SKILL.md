@@ -25,17 +25,21 @@ The wizard has 3 tabs:
 2. **Validate** — Checklist showing ✅/❌ for every requirement
 3. **Build** — One-click WebGL build + serve instructions
 
-### Manual Setup (Alternative)
-1. `GameObject > XR8 WebAR > Complete AR Scene Setup`
-2. In `XR8Manager` inspector, check tracking modes (Image, World, Face)
-3. In `XR8ImageTracker` inspector, add targets
-4. Wire references manually
+## Scene Templates
+
+Use `XR8 WebAR > Scene Templates` for pre-configured scenes:
+1. 🖼 **Image + Video** — Track image, play video overlay
+2. 🏛 **Gallery Mode** — Image + World + floor detection (museums)
+3. 🚪 **AR Portal** — Stencil-based walk-through portal
+4. 😊 **Face Filter** — Face tracking with attachment points
+5. 📍 **World Placement** — Tap-to-place on surfaces
 
 ## Editor Tools Menu
 
 | Menu Item | Purpose |
 |---|---|
 | `XR8 WebAR > Quick Setup Wizard` | One-click scene setup, validation, and build |
+| `XR8 WebAR > Scene Templates` | 5 pre-built AR scene types |
 | `XR8 WebAR > Import Gaussian Splat` | Drag-drop .ply/.splat → ready prefab |
 | `XR8 WebAR > Image Trackability Analyzer` | Score images 0-100 for tracking quality |
 | `XR8 WebAR > Build WebGL` | Quick build shortcut |
@@ -49,10 +53,28 @@ The wizard has 3 tabs:
 | `XR8ImageTracker` | Image target tracking with quality presets |
 | `XR8FaceTracker` | Face tracking with expressions, landmarks, attachments |
 | `XR8WorldTracker` | SLAM world tracking and surface detection |
+| `XR8CombinedTracker` | Image + World combined (gallery/museum mode) |
 | `XR8VideoController` | Video playback on targets |
 | `XR8TrackerSettings` | Quality presets (Performance/Balanced/Quality) |
 | `GaussianSplatRenderer` | WebGL-compatible Gaussian Splat rendering |
 | `GaussianSplatLoader` | PLY/splat file parser (Mobile-GS compatible) |
+
+## Installed Optimization Plugins (Pro Version)
+
+The project has these Unity Asset Store plugins installed:
+
+| Plugin | Folder | C# API | Purpose |
+|--------|--------|--------|---------|
+| **Mesh Baker** | `Assets/MeshBaker/` | `MB3_MeshBaker`, `MB3_TextureBaker` | Mesh combining + texture atlasing |
+| **Mantis LOD Editor Pro** | `Assets/MantisLODEditor/` | `Mantis.LODEditor` namespace | Auto-LOD generation |
+| **Mesh Animator** | `Assets/MeshAnimator/` | `MeshAnimator` namespace | VAT baking (skeletal → texture) |
+| **GPU Instancer (Crowd)** | `Assets/GPUInstancer/` | `GPUInstancer` namespace | GPU instancing for objects + crowds |
+| **Amplify Shader Editor** | `Assets/AmplifyShaderEditor/` | Visual editor (not scriptable) | Visual shader graph |
+| **DOTween Pro** | via Plugins/Demigiant/ | `DG.Tweening` namespace | Tweening: `transform.DOMove()` etc. |
+| **Animation Converter** | `Assets/AnimationConverter/` | Editor tool | Animation retargeting + compression |
+| **NaughtyAttributes** | `Assets/NaughtyAttributes/` | `[Button]`, `[ShowIf]` attributes | Better inspector UX |
+
+When writing code that uses these plugins, add appropriate `#if` guards or check for namespace availability.
 
 ## Tracking Quality Presets
 
@@ -61,6 +83,14 @@ In `XR8ImageTracker` inspector > Tracker Settings > Tracking Quality:
 - **Balanced** — Moderate smoothing (default, good for most use cases)
 - **Quality** — Heavy smoothing (stationary targets, buttery smooth)
 - **Manual** — Check "Manual Smoothing" to set position/rotation values independently
+
+## Portal Shaders
+
+Two shaders for AR portal effect:
+- `XR8WebAR/PortalMask` — Stencil-only, renders no color (the invisible window)
+- `XR8WebAR/PortalInterior` — Stencil-tested, only visible through portal mask
+
+Both must share the same `Stencil Reference` value (default: 1).
 
 ## Desktop Preview Controls
 
@@ -74,10 +104,6 @@ Enable `Desktop Preview` on XR8Manager, then Play:
 | `Scroll Wheel` | Adjust target distance |
 | `R` | Reset target position |
 | `Esc` | Lose tracking |
-
-### Face Tracking Preview
-| Key | Action |
-|-----|--------|
 | `F` | Toggle face found/lost |
 | `1-5` | Expression presets (neutral/smile/surprise/wink/talk) |
 | `Right-Click Drag` | Move face position |
@@ -99,7 +125,7 @@ WebGL-compatible (no compute shaders). Workflow:
 
 - Runtime scripts: `Assets/XR8WebAR/Runtime/Scripts/`
 - Gaussian Splat: `Assets/XR8WebAR/Runtime/Scripts/GaussianSplat/`
-- Shaders: `Assets/XR8WebAR/Runtime/Shaders/`
+- Portal shaders: `Assets/XR8WebAR/Runtime/Shaders/`
 - JS plugins: `Assets/XR8WebAR/Runtime/Plugins/`
 - Editor tools: `Assets/XR8WebAR/Editor/`
 - JS bridge: `Assets/WebGLTemplates/8thWallTracker/xr8-bridge.js`

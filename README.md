@@ -1,130 +1,146 @@
-# AR Image Template — 8th Wall Edition
+# Unity-8ThWall — WebAR Toolkit
 
-Unity WebGL template for **WebAR image tracking** powered by [8th Wall's self-hosted engine](https://github.com/8thwall/engine).
+Unity WebGL toolkit for **WebAR experiences** powered by [8th Wall's self-hosted engine](https://github.com/8thwall/engine).
 
-> Point your phone at a target image → AR content appears on top of it.
+> Point your phone at an image → AR content appears. No app required.
 
-## 🎯 What's Different from the Original?
+## ✨ Features
 
-| Feature | Original (Imagine WebAR) | This Fork (8th Wall) |
-|---------|--------------------------|---------------------|
-| Image tracking engine | OpenCV.js (obfuscated) | 8th Wall XR8 (SLAM-based) |
-| Cloud dependency | None | None |
-| App key required | No | No |
-| Addon license | Paid (Unity Asset Store) | Free (MIT + engine binary) |
-| Camera bridge | Obfuscated JS | Open-source `xr8-bridge.js` |
-| Additional AR features | Image tracking only | Image + World + Face + Sky (expandable) |
+### Core AR Tracking
+- **Image Tracking** — Track posters, paintings, business cards with SLAM-based accuracy
+- **World Tracking** — SLAM surface detection, hit testing, tap-to-place
+- **Face Tracking** — Face detection with landmarks, expressions, attachment points
+- **Combined Tracking** — Image + World simultaneously (gallery/museum mode)
+
+### Editor Tools
+| Tool | Menu Path | What It Does |
+|------|-----------|-------------|
+| **Quick Setup Wizard** | `XR8 WebAR > Quick Setup Wizard` | One-click scene setup, validation, build |
+| **Scene Templates** | `XR8 WebAR > Scene Templates` | 5 pre-built AR scene types |
+| **Import Gaussian Splat** | `XR8 WebAR > Import Gaussian Splat` | .ply/.splat → ready prefab |
+| **Image Trackability Analyzer** | `XR8 WebAR > Image Trackability Analyzer` | Score images 0-100 |
+| **Build WebGL** | `XR8 WebAR > Build WebGL` | Quick build shortcut |
+
+### Scene Templates
+1. 🖼 **Image + Video** — Track image, play video overlay
+2. 🏛 **Gallery Mode** — Image tracking + floor detection (museums, exhibitions)
+3. 🚪 **AR Portal** — Walk-through portal with stencil buffer masking
+4. 😊 **Face Filter** — Face tracking with attachment points
+5. 📍 **World Placement** — Tap-to-place objects on surfaces
+
+### Advanced Features
+- **Tracking Quality Presets** — Performance / Balanced / Quality (client-side smoothing)
+- **Gaussian Splat Rendering** — WebGL-compatible (no compute shaders), Mobile-GS compatible
+- **Desktop Preview** — Full interactive simulation in Unity Editor (T/Tab/R/Esc/mouse)
+- **Multi-Target Tracking** — Track multiple images simultaneously
+- **Portal Shaders** — Stencil-based PortalMask + PortalInterior shaders
 
 ## 🚀 Quick Start
 
 ### Prerequisites
-- **Unity 6** (or Unity 2022.3+)
+- **Unity 6** (6000.x) or Unity 2022.3+
 - **Node.js** (for image target processing)
 - A web server with HTTPS (for mobile camera access)
 
-### 1. Open in Unity
-```
-File → Open Project → select Ar-Image-Template-8thWall/
-```
+### Fastest Path (Setup Wizard)
+1. Open project in Unity
+2. Go to `XR8 WebAR > Quick Setup Wizard`
+3. Check your tracking modes, enter target ID
+4. Click **⚡ Run Setup**
+5. Hit Play to test with Desktop Preview
 
-### 2. Set the WebGL Template
-```
-Edit → Project Settings → Player → WebGL tab
-→ Resolution and Presentation → WebGL Template → 8thWallTracker
-```
+### Or Use Scene Templates
+1. Go to `XR8 WebAR > Scene Templates`
+2. Pick a template (Image+Video, Gallery, Portal, Face, World)
+3. Click **Create Scene** — everything is auto-wired
 
-### 3. Set Up Your Scene
-The scene needs these GameObjects:
-
-```
-Scene Hierarchy:
-├── Main Camera          ← Add XR8Camera component
-├── Light                ← Directional light for AR
-└── XR8ImageTracker      ← Add XR8ImageTracker component (root level!)
-    └── YourContent      ← 3D model, video plane, etc.
-```
-
-### 4. Configure the Tracker
-On the **XR8ImageTracker** GameObject:
-1. Set `Tracker Cam` → drag in your Main Camera
-2. Add an entry to `Image Targets` list:
-   - `ID`: must match the name in your target JSON (e.g., `gallery-target`)
-   - `Transform`: drag in the content you want to track
-
-### 5. Process Image Targets
+### Build & Deploy
 ```bash
-# Install the CLI
-npm install -g @8thwall/image-target-cli
+# Build in Unity: XR8 WebAR > Build WebGL
 
-# Process your image
-image-target-cli process --image my-painting.jpg --name my-target
+# Serve locally
+cd Build/
+npx serve .
+
+# Open URL on phone (same WiFi network)
 ```
-
-This creates a JSON file and luminance image. Place them in `Assets/image-targets/`.
-
-### 6. Build & Deploy
-```
-File → Build Profiles → WebGL → Build
-```
-
-Upload the build folder to any HTTPS web server. Open on your phone and point at the target image!
 
 ## 📁 Project Structure
 
 ```
-Ar-Image-Template-8thWall/
+Unity-8ThWall/
 ├── Assets/
-│   ├── XR8WebAR/                       ← The addon (UPM-ready)
-│   │   ├── package.json                ← Unity Package manifest
-│   │   └── Runtime/
-│   │       ├── Scripts/
-│   │       │   ├── XR8Camera.cs        ← Camera bridge
-│   │       │   ├── XR8ImageTracker.cs  ← Image tracker
-│   │       │   └── XR8TrackerSettings.cs
-│   │       └── Plugins/
-│   │           ├── XR8CameraLib.jslib
-│   │           ├── XR8TrackerLib.jslib
-│   │           ├── TransparentBackground.jslib
-│   │           ├── Helpers.jslib
-│   │           └── DownloadTexture.jslib
+│   ├── XR8WebAR/                           ← The core addon
+│   │   ├── Runtime/
+│   │   │   ├── Scripts/
+│   │   │   │   ├── XR8Manager.cs           ← Unified controller
+│   │   │   │   ├── XR8Camera.cs            ← Camera feed
+│   │   │   │   ├── XR8ImageTracker.cs      ← Image tracking
+│   │   │   │   ├── XR8WorldTracker.cs      ← SLAM / surfaces
+│   │   │   │   ├── XR8FaceTracker.cs       ← Face tracking
+│   │   │   │   ├── XR8CombinedTracker.cs   ← Image + World combined
+│   │   │   │   ├── XR8TrackerSettings.cs   ← Quality presets
+│   │   │   │   ├── XR8VideoController.cs   ← Video playback
+│   │   │   │   └── GaussianSplat/          ← 3DGS rendering
+│   │   │   ├── Shaders/
+│   │   │   │   ├── GaussianSplat.shader    ← WebGL splat rendering
+│   │   │   │   ├── PortalMask.shader       ← Stencil mask (invisible)
+│   │   │   │   └── PortalInterior.shader   ← Stencil-tested interior
+│   │   │   └── Plugins/                    ← .jslib bridge files
+│   │   └── Editor/
+│   │       ├── XR8SetupWizard.cs           ← Setup wizard
+│   │       ├── XR8SceneTemplates.cs        ← Scene templates
+│   │       ├── GaussianSplatImporter.cs    ← Splat import tool
+│   │       ├── ImageTrackabilityAnalyzer.cs← Image scoring
+│   │       └── WebGLBuilder.cs             ← Build automation
 │   ├── WebGLTemplates/
 │   │   └── 8thWallTracker/
-│   │       ├── index.html              ← WebGL entry point
-│   │       ├── xr8-bridge.js           ← Open-source XR8↔Unity bridge
-│   │       ├── xr.js                   ← 8th Wall engine (binary)
-│   │       └── xr-slam.js             ← SLAM chunk (binary)
-│   ├── Scenes/
-│   │   └── SampleScene.unity
-│   └── image-targets/                  ← Sample target data
-│       └── gallery-target.json
+│   │       ├── index.html                  ← WebGL entry point
+│   │       ├── xr8-bridge.js              ← Open-source XR8↔Unity bridge
+│   │       └── xr8.js                     ← 8th Wall engine (binary)
+│   └── image-targets/                     ← Target data
 └── README.md
 ```
 
-## 🔧 Installing as a Unity Package
+## 🔌 Optimization Plugins (Pro Version Only)
 
-You can also install XR8WebAR in any Unity project via the Package Manager:
+The **Pro version** (`Unity-8ThWall-Pro`, private repo) includes these premium Unity Asset Store plugins for WebGL optimization:
 
-1. Copy the `Assets/XR8WebAR/` folder to your project's `Assets/` directory
-2. Copy the `Assets/WebGLTemplates/8thWallTracker/` to your project's `Assets/WebGLTemplates/`
-3. Or install via git URL: `https://github.com/hoodtronik/Ar-Image-Template-8thWall.git?path=Assets/XR8WebAR`
+| Plugin | Purpose |
+|--------|---------|
+| **Mesh Baker** | Mesh combining + texture atlasing → fewer draw calls |
+| **Mantis LOD Editor Pro** | Auto-generates LOD levels for any mesh |
+| **Mesh Animator** | Bakes skeletal animations to Vertex Animation Textures (VAT) |
+| **GPU Instancer (Crowd)** | GPU instancing for repeated/animated objects |
+| **Amplify Shader Editor** | Visual shader graph for Built-in pipeline |
+| **DOTween Pro** | Tweening library for smooth animations |
+| **Animation Converter** | Animation retargeting and compression |
+| **NaughtyAttributes** | Better Unity inspector UX (free) |
 
-## 📜 Scripts Reference
+> These plugins are **not included** in the open-source version. Purchase them separately from the Unity Asset Store if needed.
 
-### `XR8Camera.cs`
-Attach to the **Camera** entity. Initializes the 8th Wall engine, manages camera feed, video background, and FOV.
+## 🎮 Desktop Preview Controls
 
-### `XR8ImageTracker.cs`
-Attach to a **root-level** GameObject. Receives tracking events from XR8, updates tracked entity positions/rotations.
+Enable `Desktop Preview` on XR8Manager, then enter Play Mode:
 
-**Settings:**
-- `Tracker Origin` — `CAMERA_ORIGIN` (camera stays at origin, targets move) or `FIRST_TARGET_ORIGIN` (first target at origin, camera moves)
-- `Disable World Tracking` — `true` for image-only ode (better performance)
-- `Use Extra Smoothing` — Lerp/Slerp for smoother tracking
+| Key | Action |
+|-----|--------|
+| `T` | Toggle tracking on/off |
+| `Tab` | Cycle through image targets |
+| `Mouse Drag` | Move target position |
+| `Scroll` | Adjust target distance |
+| `R` | Reset position |
+| `F` | Toggle face tracking |
+| `1-5` | Expression presets |
 
-### `xr8-bridge.js`
-Open-source JavaScript bridge. Converts XR8 pipeline events to Unity SendMessage calls.
+## ⚠️ Important Notes
+
+- **No App Keys Required** — 8th Wall engine is self-hosted. No cloud project IDs needed.
+- **WebGL Only** — This is designed for WebGL builds, not native mobile.
+- **HTTPS Required** — Camera access requires HTTPS on mobile browsers.
 
 ## 📄 License
 
 - **XR8WebAR addon code**: MIT License
-- **8th Wall engine binary** (`xr.js`, `xr-slam.js`): [8th Wall Engine Binary License](https://www.8thwall.com/docs/migration/faq/#distributed-engine-binary-license-and-permitted-use) — free to use and distribute
+- **8th Wall engine binary** (`xr8.js`): [8th Wall Engine Binary License](https://www.8thwall.com/docs/migration/faq/)
+- **Optimization plugins** (Pro version): Respective Unity Asset Store licenses
