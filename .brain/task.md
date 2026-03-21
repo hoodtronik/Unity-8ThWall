@@ -110,6 +110,19 @@
 - [ ] Reference image targets for each scene template
 
 ## Backlog 📋
+
+### 🔥 High Priority — Convai AI Characters
+- [ ] **Convai Web SDK integration** — AI-powered talking characters in WebAR
+  - [ ] Add `convai-web-sdk` via CDN script tag in WebGL template
+  - [ ] Create `ConvaiBridge.jslib` (Convai events → Unity SendMessage)
+  - [ ] Build `XR8ConvaiCharacter.cs` component (receives dialogue/blendshapes/actions)
+  - [ ] Wire to Mesh Animator + DOTween for character animation
+  - [ ] Wire blendshapes to XR8FaceTracker format for lip-sync
+  - Free tier: 100 interactions/day (good for dev)
+  - Docs: https://docs.convai.com/api-docs/plugins-and-integrations/web-plugins/convai-web-sdk
+  - Enhances: Museum Tour (#1), Resurrections (#3), Storytelling (#10), Creature (#13)
+
+### Standard Backlog
 - [ ] Character animation pipeline: iClone → Unity → Mesh Animator VAT baking
 - [ ] Mesh Animator VAT integration for animated crowds in portals
 - [ ] Face mesh rendering component
@@ -125,4 +138,5 @@
 - 🔌 Plugin Capabilities & XR8 Power Components Reference
 - 🎨 AR Art & Interactive Experience Ideas — Scene Template Brainstorm
 - 🛒 Scene Templates — Additional Assets Needed
-- Session progress notes (this file mirrors to notebook)
+- 🤖 Convai AI Characters — WebAR Integration Research
+- 📌 Session Progress — 2026-03-20 23:15 EDT
