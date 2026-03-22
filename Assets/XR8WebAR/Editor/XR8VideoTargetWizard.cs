@@ -115,8 +115,13 @@ namespace XR8WebAR.Editor
         {
             if (!autoSizeFromImage || targetImage == null) return;
             float aspect = (float)targetImage.width / targetImage.height;
-            float height = 0.17f; // ~17cm default height
-            quadSize = new Vector2(height * aspect, height);
+            // Default physical size: 20cm on the longest side
+            // This represents the real-world size of the printed target image
+            float maxDim = 0.20f;
+            if (aspect >= 1f) // Landscape
+                quadSize = new Vector2(maxDim, maxDim / aspect);
+            else // Portrait
+                quadSize = new Vector2(maxDim * aspect, maxDim);
         }
 
         // =================================================================
@@ -192,8 +197,13 @@ namespace XR8WebAR.Editor
 
             autoSizeFromImage = EditorGUILayout.Toggle("Auto-size from image", autoSizeFromImage);
             EditorGUI.BeginDisabledGroup(autoSizeFromImage);
-            quadSize = EditorGUILayout.Vector2Field("Video Quad Size (m)", quadSize);
+            quadSize = EditorGUILayout.Vector2Field("Quad Size (meters)", quadSize);
             EditorGUI.EndDisabledGroup();
+            EditorGUILayout.HelpBox(
+                "Quad size = real-world dimensions of the printed target image.\n" +
+                "The video overlay will fill this exact area.\n" +
+                "Example: 20cm × 11cm for a standard postcard.",
+                MessageType.None);
 
             EditorGUILayout.Space(4);
             loop = EditorGUILayout.Toggle("Loop Video", loop);
@@ -385,12 +395,13 @@ namespace XR8WebAR.Editor
             contentObj.transform.SetParent(anchor.transform);
             contentObj.transform.localPosition = Vector3.zero;
 
-            // Quad mesh
+            // Quad mesh — always matches target image dimensions
             var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
             quad.name = "VideoQuad";
             quad.transform.SetParent(contentObj.transform);
             quad.transform.localPosition = new Vector3(0, 0.001f, 0); // Tiny offset above anchor
-            quad.transform.localRotation = Quaternion.Euler(90f, 0, 0);
+            quad.transform.localRotation = Quaternion.Euler(90f, 0, 0); // Lay flat on XZ plane
+            // Use SAME dimensions as target image quad — video fills the image area
             quad.transform.localScale = new Vector3(quadSize.x, quadSize.y, 1f);
 
             // Remove collider (not needed for video display)
