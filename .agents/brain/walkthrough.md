@@ -84,12 +84,27 @@ cdfeb94 feat: custom inspector with auto-discovery
 - ⚠️ **Desktop preview mode** — events fire but video doesn't play visually. Needs investigation into VideoController activation in editor.
 - ⚠️ **Phone preview** — build WebGL → serve locally → open on phone. This is the real testing workflow.
 
+## Convai AI Characters (Integrated)
+- **convai-bridge.js** — JS bridge for Convai Web SDK ↔ Unity
+- **ConvaiBridge.jslib** — C# DllImport bindings
+- **XR8ConvaiCharacter.cs** — Drop-on Unity component (custom inspector, lip-sync, animation, events)
+- Convai = brain only. 3D model comes from Reallusion CC4, Mixamo, or any source.
+- Lip-sync: 60fps ARKit blendshapes (52 values) via `blendshapeQueue.getFrameAtTime()`
+
+## Reallusion → Unity Pipeline
+- **Auto Setup for Unity** (free plugin) handles CC4 → Unity shader/material import
+- **InstaLOD** (built into CC4) optimizes poly count (target 10K-15K for WebAR)
+- Export FBX with "Unity" preset + ARKit facial expressions
+- Separate model + animation FBX files preferred
+
 ## Next Steps
 1. Test WebGL build on phone (the real validation)
-2. Investigate desktop preview video playback
-3. Add more image targets / test multi-target
-4. Polish face tracking attachment point workflow
-5. **Gaussian Splat support** — integrate a mobile-optimized Gaussian splat renderer for AR. Reference repo: [mobile-gs](https://github.com/xiaobiaodu/mobile-gs) (mobile Gaussian splatting). Also consider [UnityGaussianSplatting](https://github.com/aras-p/UnityGaussianSplatting) for Unity integration. Key tasks:
+2. Import Reallusion characters (masked cyberpunk avatar + lip-sync test character)
+3. Test Convai AI conversation on phone
+4. Investigate desktop preview video playback
+5. Add more image targets / test multi-target
+6. Polish face tracking attachment point workflow
+7. **Gaussian Splat support** — integrate a mobile-optimized Gaussian splat renderer for AR. Reference repo: [mobile-gs](https://github.com/xiaobiaodu/mobile-gs) (mobile Gaussian splatting). Also consider [UnityGaussianSplatting](https://github.com/aras-p/UnityGaussianSplatting) for Unity integration. Key tasks:
    - Evaluate mobile-gs for WebGL/mobile browser compatibility
    - Add Gaussian splat renderer package to project
    - Create `XR8GaussianSplatTarget` component that parents a splat to a tracked image/surface

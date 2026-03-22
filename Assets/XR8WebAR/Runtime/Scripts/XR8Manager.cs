@@ -438,7 +438,9 @@ namespace XR8WebAR
 
         private void Update()
         {
+#if UNITY_EDITOR
             DesktopPreviewHandleInput();
+#endif
         }
 
         private void CleanupPreviewWebcam()

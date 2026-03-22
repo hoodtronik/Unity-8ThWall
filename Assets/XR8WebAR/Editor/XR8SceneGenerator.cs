@@ -206,8 +206,16 @@ namespace XR8WebAR.Editor
         {
             var obj = new GameObject("XR8ImageTracker");
             var tracker = obj.AddComponent<XR8ImageTracker>();
+
+            // Create target plane (anchor) — visible image target representation
+            var targetPlane = new GameObject(targetName + "_TargetPlane");
+            targetPlane.transform.SetParent(obj.transform);
+            targetPlane.transform.localPosition = Vector3.zero;
+            targetPlane.tag = "EditorOnly";
+
+            // Content root (child of target plane)
             var content = new GameObject(targetName + "_Content");
-            content.transform.SetParent(obj.transform);
+            content.transform.SetParent(targetPlane.transform);
             content.transform.localPosition = Vector3.zero;
             contentRoot = content.transform;
 
@@ -218,6 +226,7 @@ namespace XR8WebAR.Editor
             targets.InsertArrayElementAtIndex(0);
             var elem = targets.GetArrayElementAtIndex(0);
             elem.FindPropertyRelative("id").stringValue = targetName;
+            elem.FindPropertyRelative("anchor").objectReferenceValue = targetPlane.transform;
             elem.FindPropertyRelative("transform").objectReferenceValue = contentRoot;
             so.ApplyModifiedProperties();
             return obj;

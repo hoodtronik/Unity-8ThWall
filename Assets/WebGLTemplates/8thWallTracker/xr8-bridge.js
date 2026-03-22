@@ -368,7 +368,49 @@ class XR8WorldBridge {
         this.trackerName = unityObjectName || 'XR8WorldTracker';
         this.showMeshes = showMeshes || false;
         this.isReady = true;
+        this.originPlaced = false;
+        this.settings = {};
+
+        // Pick up any settings that arrived before we were initialized
+        if (window._pendingWorldSettings) {
+            this.setTrackerSettings(window._pendingWorldSettings);
+            delete window._pendingWorldSettings;
+        }
+
         console.log('[XR8WorldBridge] Configured. Object:', this.trackerName);
+    }
+
+    // Place the world origin — tells the JS engine the user tapped to place content
+    placeOrigin(camPosStr) {
+        this.originPlaced = true;
+        console.log('[XR8WorldBridge] Origin placed at:', camPosStr);
+    }
+
+    // Reset the world origin — clears accumulated SLAM drift
+    resetOrigin() {
+        this.originPlaced = false;
+        this.surfaces = {};
+        console.log('[XR8WorldBridge] Origin reset');
+    }
+
+    // Set viewport position for SLAM-aware content repositioning
+    setViewportPos(vStr) {
+        // vStr is "x,y" in normalized viewport coords (0-1)
+        var parts = vStr.split(',');
+        if (parts.length >= 2) {
+            var nx = parseFloat(parts[0]);
+            var ny = parseFloat(parts[1]);
+            this.hitTest(nx, ny);
+        }
+    }
+
+    // Apply world tracker settings from Unity (mode, arm length, compass, etc.)
+    setTrackerSettings(settings) {
+        this.settings = settings;
+        console.log('[XR8WorldBridge] Settings applied:', settings);
+        // Store mode for conditional behavior in _onUpdate
+        if (settings.MODE) this.mode = settings.MODE;
+        if (settings.USE_COMPASS !== undefined) this.useCompass = settings.USE_COMPASS;
     }
 
     getPipelineModule() {

@@ -196,6 +196,11 @@ namespace XR8WebAR
 
         private void OnDestroy()
         {
+            if (material != null)
+            {
+                Destroy(material);
+            }
+
             if (renderTexture != null)
             {
                 renderTexture.Release();

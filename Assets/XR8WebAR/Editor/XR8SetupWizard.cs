@@ -272,12 +272,32 @@ namespace XR8WebAR.Editor
             // Create first image target with content
             if (!string.IsNullOrEmpty(firstTargetId))
             {
-                // Create content GameObject
+                // Create target plane (anchor) — visible image plane
+                var targetPlane = new GameObject(firstTargetId + "_TargetPlane");
+                targetPlane.transform.SetParent(trackerObj.transform);
+                targetPlane.transform.localPosition = Vector3.zero;
+                targetPlane.tag = "EditorOnly";
+
+                // Add quad mesh visualization
+                var mf = targetPlane.AddComponent<MeshFilter>();
+                var mr = targetPlane.AddComponent<MeshRenderer>();
+
+                var quadMesh = CreateSetupTargetQuad(firstTargetId);
+                mf.sharedMesh = quadMesh;
+
+                var planeMat = CreateSetupPlaneMaterial(firstTargetId);
+                mr.sharedMaterial = planeMat;
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                mr.receiveShadows = false;
+
+                Undo.RegisterCreatedObjectUndo(targetPlane, "XR8 Setup Target Plane");
+
+                // Create content GameObject (child of target plane)
                 GameObject contentObj;
                 if (createSampleContent)
                 {
                     contentObj = new GameObject(firstTargetId + "_Content");
-                    contentObj.transform.SetParent(trackerObj.transform);
+                    contentObj.transform.SetParent(targetPlane.transform);
                     contentObj.transform.localPosition = Vector3.zero;
 
                     // Add a visible quad
@@ -295,7 +315,7 @@ namespace XR8WebAR.Editor
                 else
                 {
                     contentObj = new GameObject(firstTargetId + "_Content");
-                    contentObj.transform.SetParent(trackerObj.transform);
+                    contentObj.transform.SetParent(targetPlane.transform);
                     contentObj.transform.localPosition = Vector3.zero;
                     Undo.RegisterCreatedObjectUndo(contentObj, "XR8 Setup Content");
                 }
@@ -309,12 +329,89 @@ namespace XR8WebAR.Editor
                     targetsProp.InsertArrayElementAtIndex(0);
                     var elem = targetsProp.GetArrayElementAtIndex(0);
                     elem.FindPropertyRelative("id").stringValue = firstTargetId;
+                    elem.FindPropertyRelative("anchor").objectReferenceValue = targetPlane.transform;
                     elem.FindPropertyRelative("transform").objectReferenceValue = contentObj.transform;
                 }
             }
 
             trackerSo.ApplyModifiedProperties();
             return trackerObj;
+        }
+
+        /// <summary>Creates a flat XZ quad mesh for setup wizard target plane.</summary>
+        private Mesh CreateSetupTargetQuad(string targetName)
+        {
+            float size = 0.15f;
+            float aspect = 1f;
+            var tex = FindSetupTargetImage(targetName);
+            if (tex != null) aspect = (float)tex.width / tex.height;
+
+            var mesh = new Mesh { name = targetName + "_PlaneQuad" };
+            mesh.vertices = new Vector3[]
+            {
+                new Vector3(-size * aspect, 0, -size),
+                new Vector3( size * aspect, 0, -size),
+                new Vector3( size * aspect, 0,  size),
+                new Vector3(-size * aspect, 0,  size)
+            };
+            mesh.uv = new Vector2[]
+            {
+                new Vector2(0, 0), new Vector2(1, 0),
+                new Vector2(1, 1), new Vector2(0, 1)
+            };
+            mesh.triangles = new int[] { 0, 2, 1, 0, 3, 2 };
+            mesh.RecalculateNormals();
+            return mesh;
+        }
+
+        /// <summary>Creates and saves a material with the target image.</summary>
+        private Material CreateSetupPlaneMaterial(string targetName)
+        {
+            var tex = FindSetupTargetImage(targetName);
+            var shader = Shader.Find("Unlit/Transparent");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            var mat = new Material(shader);
+            if (tex != null)
+            {
+                mat.mainTexture = tex;
+                mat.color = new Color(1, 1, 1, 0.8f);
+            }
+            else
+            {
+                mat.color = new Color(0, 0.9f, 0.4f, 0.3f);
+            }
+            mat.name = targetName + "_PlaneMat";
+
+            string matFolder = "Assets/XR8WebAR/Editor/TargetPlaneMaterials";
+            if (!AssetDatabase.IsValidFolder(matFolder))
+            {
+                if (!AssetDatabase.IsValidFolder("Assets/XR8WebAR/Editor"))
+                    AssetDatabase.CreateFolder("Assets/XR8WebAR", "Editor");
+                AssetDatabase.CreateFolder("Assets/XR8WebAR/Editor", "TargetPlaneMaterials");
+            }
+            AssetDatabase.CreateAsset(mat, matFolder + "/" + mat.name + ".mat");
+            return mat;
+        }
+
+        /// <summary>Finds target image texture from project.</summary>
+        private Texture2D FindSetupTargetImage(string targetId)
+        {
+            string[] dirs = { "Assets/image-targets", "Assets/ImageTargets",
+                "Assets/StreamingAssets/image-targets", "Assets/XR8WebAR/Targets" };
+            string[] suffixes = { "_original", "_luminance", "", "_thumb" };
+            string[] exts = { ".jpg", ".png", ".jpeg" };
+            foreach (var dir in dirs)
+            {
+                if (!System.IO.Directory.Exists(dir)) continue;
+                foreach (var suffix in suffixes)
+                    foreach (var ext in exts)
+                    {
+                        string path = System.IO.Path.Combine(dir, targetId + suffix + ext).Replace("\\", "/");
+                        var found = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                        if (found != null) return found;
+                    }
+            }
+            return null;
         }
 
         private GameObject SetupFaceTracker()

@@ -42,15 +42,37 @@ namespace XR8WebAR.Editor
             {
                 var element = imageTargetsProp.GetArrayElementAtIndex(i);
                 var idProp = element.FindPropertyRelative("id");
+                var anchorProp = element.FindPropertyRelative("anchor");
                 var transformProp = element.FindPropertyRelative("transform");
 
-                if (transformProp.objectReferenceValue == null) continue;
+                // Determine which transform to use for positioning
+                Transform drawAt = null;
+                if (anchorProp != null && anchorProp.objectReferenceValue != null)
+                    drawAt = (Transform)anchorProp.objectReferenceValue;
+                else if (transformProp.objectReferenceValue != null)
+                    drawAt = (Transform)transformProp.objectReferenceValue;
+
+                if (drawAt == null) continue;
+
                 string targetId = idProp.stringValue;
                 if (string.IsNullOrEmpty(targetId)) continue;
 
-                var contentTransform = (Transform)transformProp.objectReferenceValue;
+                // Skip drawing wireframe gizmo if target plane has a Renderer (it's already visible)
+                var renderer = drawAt.GetComponent<Renderer>();
+                if (renderer != null && renderer.enabled)
+                {
+                    // Just draw the label
+                    var labelStyle = new GUIStyle(EditorStyles.boldLabel)
+                    {
+                        normal = { textColor = new Color(0f, 0.9f, 0.4f) },
+                        fontSize = 11
+                    };
+                    Handles.Label(drawAt.position + Vector3.up * 0.2f, "📷 " + targetId, labelStyle);
+                    continue;
+                }
+
                 var thumb = FindThumbnail(targetId);
-                DrawTargetInScene(contentTransform, targetId, thumb);
+                DrawTargetInScene(drawAt, targetId, thumb);
             }
         }
 

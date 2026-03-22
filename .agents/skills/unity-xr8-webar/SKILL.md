@@ -49,14 +49,15 @@ Use `XR8 WebAR > Scene Templates` for pre-configured scenes:
 | Script | Purpose |
 |---|---|
 | `XR8Manager` | Unified controller — enable tracking modes, desktop preview |
-| `XR8Camera` | Camera feed background rendering |
-| `XR8ImageTracker` | Image target tracking with quality presets |
-| `XR8FaceTracker` | Face tracking with expressions, landmarks, attachments |
-| `XR8WorldTracker` | SLAM world tracking and surface detection |
+| `XR8Camera` | Camera feed background rendering, URP support |
+| `XR8ImageTracker` | Image target tracking with anchor-based workflow + quality presets |
+| `XR8FaceTracker` | Face tracking with expressions, landmarks, 6 attachment points |
+| `XR8WorldTracker` | SLAM world tracking — 6DOF, 3DOF, Orbit modes. JS origin place/reset, compass, angle smoothing |
 | `XR8CombinedTracker` | Image + World combined (gallery/museum mode) |
-| `XR8VideoController` | Video playback on targets |
+| `XR8PlacementIndicator` | Visual reticle for tap-to-place placement workflow |
+| `XR8VideoController` | Video playback on targets (with proper material cleanup) |
 | `XR8TrackerSettings` | Quality presets (Performance/Balanced/Quality) |
-| `GaussianSplatRenderer` | WebGL-compatible Gaussian Splat rendering |
+| `GaussianSplatRenderer` | WebGL-compatible Gaussian Splat rendering (GPU instanced, pre-allocated depth sort) |
 | `GaussianSplatLoader` | PLY/splat file parser (Mobile-GS compatible) |
 
 ## Installed Optimization Plugins (Pro Version)
@@ -130,6 +131,37 @@ WebGL-compatible (no compute shaders). Workflow:
 - Editor tools: `Assets/XR8WebAR/Editor/`
 - JS bridge: `Assets/WebGLTemplates/8thWallTracker/xr8-bridge.js`
 - HTML template: `Assets/WebGLTemplates/8thWallTracker/index.html`
+
+## Convai AI Characters
+
+The project includes a Convai Web SDK integration for AI-powered talking characters in WebAR.
+
+### Architecture
+- **convai-bridge.js** (`WebGLTemplates/8thWallTracker/`) — JS bridge, same pattern as xr8-bridge.js
+- **ConvaiBridge.jslib** (`Runtime/Plugins/`) — Unity C#↔JS interop
+- **XR8ConvaiCharacter.cs** (`Runtime/Scripts/`) — Drop-on component for any character
+- SDK loaded via CDN: `@convai/web-sdk@1.2.0`
+
+### Key Facts
+- Convai = **brain only** (AI personality, voice, lip-sync data). You provide the 3D model.
+- Characters from Convai's Avatar Studio **CANNOT** be downloaded as 3D models.
+- Lip-sync: 60fps ARKit blendshapes (52 values) streamed via WebRTC.
+- Min animations: Idle + Talking. Optional: Listening, Thinking, Wave, Nod.
+
+### Reallusion → Unity Pipeline
+1. Create/customize character in CC4
+2. Use InstaLOD Remesher → optimize to 10K-15K triangles for WebAR
+3. Enable ARKit facial expressions (Facial Profile > ARKit)
+4. Export FBX with "Unity" preset (separate model + animation FBX files preferred)
+5. Install **Auto Setup for Unity** plugin (free, from Reallusion)
+6. Drag FBX into Unity → Auto Setup handles shader assignment
+7. Set up Animator Controller (Idle ↔ Talking, "IsTalking" Bool)
+8. Add `XR8ConvaiCharacter` component → paste Character ID + API Key
+
+### Poly Budget for WebAR
+- Character: 5K-15K triangles (ideal), 30K max
+- Total scene: under 100K triangles
+- Tools: Mantis LOD, Mesh Baker, InstaLOD (in CC4)
 
 ## IMPORTANT: No App Keys
 

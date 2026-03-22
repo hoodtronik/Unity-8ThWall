@@ -75,6 +75,10 @@
     <!-- XR8 ↔ Unity Bridge (open source) -->
     <script src="xr8-bridge.js"></script>
 
+    <!-- Convai AI Characters (Web SDK + bridge) -->
+    <script src="https://cdn.jsdelivr.net/npm/@convai/web-sdk@1.2.0/dist/convai-web-sdk.js"></script>
+    <script src="convai-bridge.js"></script>
+
     <!-- Unity WebGL Loader -->
     <script src="Build/{{{ LOADER_FILENAME }}}"></script>
 
@@ -88,6 +92,9 @@
         window.xr8Tracker = new XR8TrackerBridge();
         window.xr8World = new XR8WorldBridge();
         window.xr8Face = new XR8FaceBridge();
+
+        // Create Convai bridge instance
+        window.convaiBridge = new ConvaiBridge();
 
         function StartAR() {
             canvas.style.width = window.innerWidth + "px";

@@ -50,3 +50,35 @@ For **every significant thing learned** (new technique, pattern, fix, or integra
 3. **NotebookLM** — Add a source to the `Unity-8thWall XR8WebAR` notebook documenting it
 
 This ensures knowledge is never lost between sessions and can be retrieved via RAG.
+
+## 11. Running Journal (CHANGELOG)
+**EVERY session MUST** update the running journal before ending. No exceptions.
+
+### Where:
+1. **`.brain/CHANGELOG.md`** — Append a new dated entry at the top (below the header)
+2. **NotebookLM** — Add/update a note titled `📌 Session Progress — [DATE]` in notebook `512ab6e1-87a7-4960-90dc-744c26d766ea`
+
+### What to include:
+- Date and time
+- Agent name (e.g., "Antigravity (Gemini)", "Cursor", etc.)
+- Bullet list of everything done this session
+- Files created, modified, or deleted
+- Any new issues discovered
+- What's next / what was left unfinished
+- Any decisions made and why
+
+### Format (CHANGELOG.md):
+```markdown
+## YYYY-MM-DD — Session: [Brief Title]
+
+**Agent:** [Agent Name]  
+**What was done:**
+- Item 1
+- Item 2
+
+**Files changed:** `file1.cs`, `file2.js`  
+**Known issues:** ...  
+**Next steps:** ...
+```
+
+This journal is the **source of truth** for project continuity. When conversations get erased, this file + NotebookLM preserve the full history.

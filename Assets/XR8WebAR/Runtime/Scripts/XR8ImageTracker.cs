@@ -9,14 +9,32 @@ namespace XR8WebAR
     /// <summary>
     /// Serializable image target definition.
     /// Set the ID and assign a Transform that will be positioned at the tracked image.
+    /// 
+    /// The 'anchor' transform is what the tracker drives (position/rotation/scale).
+    /// Child objects under the anchor keep their own local transforms, so you can
+    /// freely rotate, offset, or scale your content.
+    /// 
+    /// If 'anchor' is null, the tracker will auto-create a wrapper anchor at runtime
+    /// and re-parent the content under it.
     /// </summary>
     [System.Serializable]
     public class XR8ImageTarget
     {
         public string id;
+
+        [Tooltip("The anchor transform that the tracker will drive. " +
+            "Your content should be a CHILD of this anchor so it keeps its local offsets.")]
+        public Transform anchor;
+
+        [Tooltip("The content root (used for activate/deactivate on found/lost). " +
+            "If anchor is null, this is also what gets driven directly (legacy mode).")]
         public Transform transform;
+
         [HideInInspector] public Vector3 targetPos;
         [HideInInspector] public Quaternion targetRot;
+
+        /// <summary>The transform the tracker actually moves each frame.</summary>
+        public Transform TrackedTransform => anchor != null ? anchor : transform;
     }
 
     /// <summary>
@@ -99,10 +117,27 @@ namespace XR8WebAR
                     Debug.LogWarning("[XR8ImageTracker] Skipping target with empty ID or null transform");
                     continue;
                 }
+
+                // Auto-create anchor wrapper if not assigned
+                if (target.anchor == null)
+                {
+                    var anchorGO = new GameObject(target.id + "_Anchor");
+                    anchorGO.transform.SetParent(this.transform, false);
+                    target.anchor = anchorGO.transform;
+
+                    // Reparent the content under the anchor, preserving local transform
+                    target.transform.SetParent(target.anchor, true);
+
+                    Debug.Log("[XR8ImageTracker] Auto-created anchor for '" + target.id + 
+                        "'. Content '" + target.transform.name + "' is now a child — " +
+                        "its local rotation/position/scale are preserved.");
+                }
+
                 targets.Add(target.id, target);
                 if (target.transform.GetComponent<Renderer>() != null)
                     target.transform.GetComponent<Renderer>().enabled = false;
-                target.transform.gameObject.SetActive(false);
+                // Deactivate the anchor (which hides all children)
+                target.anchor.gameObject.SetActive(false);
 
                 serializedIds += target.id;
                 if (target != imageTargets[imageTargets.Count - 1])
@@ -179,6 +214,8 @@ namespace XR8WebAR
         {
             if (!targets.ContainsKey(id)) return;
 
+            // Activate the anchor (which shows all children including content)
+            targets[id].anchor.gameObject.SetActive(true);
             targets[id].transform.gameObject.SetActive(true);
 
             if (!trackedIds.Contains(id))
@@ -193,7 +230,10 @@ namespace XR8WebAR
         {
             if (!targets.ContainsKey(id)) return;
 
-            targets[id].transform.gameObject.SetActive(false || dontDeactivateOnLost);
+            // Deactivate the anchor (hides all content children)
+            if (!dontDeactivateOnLost)
+                targets[id].anchor.gameObject.SetActive(false);
+            targets[id].transform.gameObject.SetActive(dontDeactivateOnLost);
 
             var index = trackedIds.FindIndex(t => t == id);
             if (index > -1)
@@ -234,25 +274,27 @@ namespace XR8WebAR
             pos.y = float.Parse(values[2], System.Globalization.CultureInfo.InvariantCulture);
             pos.z = float.Parse(values[3], System.Globalization.CultureInfo.InvariantCulture);
 
-            var target = targets[id].transform;
+            // Drive the anchor transform, NOT the content transform directly.
+            // Content keeps its own local rotation/position/scale under the anchor.
+            var trackedXform = targets[id].TrackedTransform;
 
             if (trackerCam.isFlipped)
             {
                 rot.eulerAngles = new Vector3(rot.eulerAngles.x, rot.eulerAngles.y * -1, rot.eulerAngles.z * -1);
                 pos.x *= -1;
-                target.localScale = flippedScale;
+                trackedXform.localScale = flippedScale;
             }
             else
             {
-                target.localScale = Vector3.one;
+                trackedXform.localScale = Vector3.one;
             }
 
             if (trackerOrigin == TrackerOrigin.CAMERA_ORIGIN)
             {
                 if (!trackerSettings.useExtraSmoothing)
                 {
-                    target.position = trackerCam.transform.TransformPoint(pos);
-                    target.rotation = trackerCam.transform.rotation * rot;
+                    trackedXform.position = trackerCam.transform.TransformPoint(pos);
+                    trackedXform.rotation = trackerCam.transform.rotation * rot;
                 }
                 else
                 {
@@ -264,8 +306,8 @@ namespace XR8WebAR
             {
                 if (trackedIds[0] == id)
                 {
-                    target.position = Vector3.zero;
-                    target.rotation = Quaternion.identity;
+                    trackedXform.position = Vector3.zero;
+                    trackedXform.rotation = Quaternion.identity;
 
                     if (!trackerSettings.useExtraSmoothing)
                     {
@@ -284,8 +326,8 @@ namespace XR8WebAR
                 {
                     if (!trackerSettings.useExtraSmoothing)
                     {
-                        target.position = trackerCam.transform.TransformPoint(pos);
-                        target.rotation = trackerCam.transform.rotation * rot;
+                        trackedXform.position = trackerCam.transform.TransformPoint(pos);
+                        trackedXform.rotation = trackerCam.transform.rotation * rot;
                     }
                     else
                     {
@@ -302,13 +344,14 @@ namespace XR8WebAR
             {
                 foreach (var target in imageTargets)
                 {
-                    if (target.transform.gameObject.activeSelf)
+                    var trackedXform = target.TrackedTransform;
+                    if (trackedXform != null && trackedXform.gameObject.activeSelf)
                     {
-                        target.transform.position = Vector3.Lerp(
-                            target.transform.position, target.targetPos,
+                        trackedXform.position = Vector3.Lerp(
+                            trackedXform.position, target.targetPos,
                             Time.deltaTime * trackerSettings.smoothenFactor);
-                        target.transform.rotation = Quaternion.Slerp(
-                            target.transform.rotation, target.targetRot,
+                        trackedXform.rotation = Quaternion.Slerp(
+                            trackedXform.rotation, target.targetRot,
                             Time.deltaTime * trackerSettings.rotationSmoothing);
                     }
                 }

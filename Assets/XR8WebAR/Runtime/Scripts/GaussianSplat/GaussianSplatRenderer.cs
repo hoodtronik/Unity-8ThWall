@@ -47,6 +47,7 @@ namespace XR8WebAR.GaussianSplat
         // --- Runtime ---
         private GaussianSplatLoader.SplatData[] allSplats;
         private int[] sortedIndices;
+        private float[] depthBuffer; // pre-allocated to avoid GC during sort
         private int visibleCount;
         private int frameCounter;
 
@@ -73,12 +74,13 @@ namespace XR8WebAR.GaussianSplat
 
             if (splatMaterial == null)
             {
-                splatMaterial = new Material(Shader.Find("XR8WebAR/GaussianSplat"));
-                if (splatMaterial.shader == null)
+                var shader = Shader.Find("XR8WebAR/GaussianSplat");
+                if (shader == null)
                 {
                     Debug.LogError("[GaussianSplatRenderer] Could not find GaussianSplat shader!");
                     return;
                 }
+                splatMaterial = new Material(shader);
             }
 
             if (splatAsset != null)
@@ -134,6 +136,7 @@ namespace XR8WebAR.GaussianSplat
             int count = Mathf.Min(allSplats.Length, maxVisibleSplats);
 
             sortedIndices = new int[allSplats.Length];
+            depthBuffer = new float[allSplats.Length];
             for (int i = 0; i < allSplats.Length; i++)
                 sortedIndices[i] = i;
 
@@ -205,7 +208,7 @@ namespace XR8WebAR.GaussianSplat
             // Sort by distance along camera forward (dot product) — back to front
             // Use a simple approach: compute depth for each, then sort indices
             float maxDistSq = maxRenderDistance * maxRenderDistance;
-            var depths = new float[allSplats.Length];
+            var depths = depthBuffer;
             visibleCount = 0;
 
             for (int i = 0; i < allSplats.Length; i++)

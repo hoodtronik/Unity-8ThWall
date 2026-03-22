@@ -58,3 +58,11 @@ MeshBakerExamples.csproj
 NaughtyAttributes.Core.csproj
 NaughtyAttributes.Editor.csproj
 NaughtyAttributes.Test.csproj
+
+# AG Bridge — Remote phone access (not project code)
+ag_bridge/
+launch_ag_bridge.bat
+
+# Auto-generated .csproj files
+*.csproj
+*.sln

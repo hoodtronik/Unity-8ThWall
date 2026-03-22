@@ -198,40 +198,68 @@ namespace XR8WebAR.Editor
                 {
                     DragAndDrop.AcceptDrag();
 
-                    foreach (var path in DragAndDrop.paths)
+                    foreach (var obj in DragAndDrop.objectReferences)
                     {
-                        string targetName = null;
-
-                        if (path.EndsWith(".json"))
+                        if (obj is Texture2D tex)
                         {
-                            // Parse name from JSON
-                            try
-                            {
-                                string content = File.ReadAllText(path);
-                                targetName = ExtractJsonField(content, "name");
-                            }
-                            catch { }
+                            // Use the factory to create a proper image target
+                            string texPath = AssetDatabase.GetAssetPath(tex);
+                            string targetName = DeriveTargetId(Path.GetFileNameWithoutExtension(texPath));
 
-                            if (string.IsNullOrEmpty(targetName))
-                                targetName = Path.GetFileNameWithoutExtension(path);
-                        }
-                        else if (path.EndsWith(".jpg") || path.EndsWith(".png") || path.EndsWith(".jpeg"))
-                        {
-                            // Use image filename as target ID
-                            targetName = Path.GetFileNameWithoutExtension(path);
-
-                            // Strip common suffixes
-                            string[] suffixes = { "_original", "_luminance", "_thumb", "_target" };
-                            foreach (var suffix in suffixes)
+                            // Check if already exists
+                            bool exists = false;
+                            for (int i = 0; i < imageTargetsProp.arraySize; i++)
                             {
-                                if (targetName.EndsWith(suffix))
+                                if (imageTargetsProp.GetArrayElementAtIndex(i)
+                                    .FindPropertyRelative("id").stringValue == targetName)
                                 {
-                                    targetName = targetName.Substring(0, targetName.Length - suffix.Length);
+                                    exists = true;
                                     break;
                                 }
                             }
+
+                            if (!exists)
+                            {
+                                serializedObject.ApplyModifiedProperties();
+
+                                // Create target plane inline (like CreateTargetPlane but for new entry)
+                                int newIndex = imageTargetsProp.arraySize;
+                                imageTargetsProp.InsertArrayElementAtIndex(newIndex);
+                                var newElement = imageTargetsProp.GetArrayElementAtIndex(newIndex);
+                                newElement.FindPropertyRelative("id").stringValue = targetName;
+                                newElement.FindPropertyRelative("transform").objectReferenceValue = _target.transform;
+                                serializedObject.ApplyModifiedProperties();
+
+                                // Now create the target plane for this entry
+                                serializedObject.Update();
+                                var anchorProp = imageTargetsProp.GetArrayElementAtIndex(newIndex)
+                                    .FindPropertyRelative("anchor");
+                                var transformProp = imageTargetsProp.GetArrayElementAtIndex(newIndex)
+                                    .FindPropertyRelative("transform");
+                                CreateTargetPlane(targetName, anchorProp, transformProp);
+                                serializedObject.Update();
+
+                                Debug.Log("[XR8Editor] Created image target from drag: " + targetName);
+                            }
+                            continue;
                         }
-                        else continue;
+                    }
+
+                    // Also handle path-based drops (JSON files)
+                    foreach (var path in DragAndDrop.paths)
+                    {
+                        if (!path.EndsWith(".json")) continue;
+
+                        string targetName = null;
+                        try
+                        {
+                            string content = File.ReadAllText(path);
+                            targetName = ExtractJsonField(content, "name");
+                        }
+                        catch { }
+
+                        if (string.IsNullOrEmpty(targetName))
+                            targetName = Path.GetFileNameWithoutExtension(path);
 
                         if (string.IsNullOrEmpty(targetName)) continue;
 
@@ -254,7 +282,7 @@ namespace XR8WebAR.Editor
                             var newElement = imageTargetsProp.GetArrayElementAtIndex(newIndex);
                             newElement.FindPropertyRelative("id").stringValue = targetName;
                             newElement.FindPropertyRelative("transform").objectReferenceValue = _target.transform;
-                            Debug.Log("[XR8Editor] Added image target: " + targetName);
+                            Debug.Log("[XR8Editor] Added image target from JSON: " + targetName);
                         }
                     }
 
@@ -268,6 +296,7 @@ namespace XR8WebAR.Editor
         {
             var element = arrayProp.GetArrayElementAtIndex(index);
             var idProp = element.FindPropertyRelative("id");
+            var anchorProp = element.FindPropertyRelative("anchor");
             var transformProp = element.FindPropertyRelative("transform");
 
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
@@ -283,6 +312,9 @@ namespace XR8WebAR.Editor
 
             EditorGUILayout.BeginVertical();
             EditorGUILayout.PropertyField(idProp, new GUIContent("Target ID"));
+            EditorGUILayout.PropertyField(anchorProp, new GUIContent("Target Plane",
+                "The anchor/plane driven by tracking. Your content should be a child of this. " +
+                "Use 'Create Target Plane' to auto-generate one."));
             EditorGUILayout.PropertyField(transformProp, new GUIContent("Content Root"));
             EditorGUILayout.EndVertical();
 
@@ -296,7 +328,158 @@ namespace XR8WebAR.Editor
 
             EditorGUILayout.EndHorizontal();
 
+            // --- Create Target Plane button ---
+            if (anchorProp.objectReferenceValue == null)
+            {
+                EditorGUILayout.Space(2);
+                GUI.color = new Color(0.4f, 0.9f, 1f);
+                if (GUILayout.Button("🎯 Create Target Plane", GUILayout.Height(24)))
+                {
+                    serializedObject.ApplyModifiedProperties();
+                    CreateTargetPlane(idProp.stringValue, anchorProp, transformProp);
+                    serializedObject.Update();
+                }
+                GUI.color = Color.white;
+            }
+            else
+            {
+                // Show a small helper to select the plane
+                EditorGUILayout.BeginHorizontal();
+                EditorGUILayout.Space();
+                var planeGO = ((Transform)anchorProp.objectReferenceValue).gameObject;
+                GUI.color = new Color(0.8f, 0.8f, 0.8f);
+                if (GUILayout.Button("Select Target Plane ▸", EditorStyles.miniButton, GUILayout.Width(150)))
+                {
+                    Selection.activeGameObject = planeGO;
+                    SceneView.FrameLastActiveSceneView();
+                }
+                GUI.color = Color.white;
+                EditorGUILayout.EndHorizontal();
+            }
+
             EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>
+        /// Creates a visible, selectable quad GameObject representing the image target plane.
+        /// The content transform is reparented under it so the user can manipulate
+        /// the plane in 3D space and see the content aligned relative to it.
+        /// </summary>
+        private void CreateTargetPlane(string targetId, SerializedProperty anchorProp, SerializedProperty transformProp)
+        {
+            var tracker = (XR8ImageTracker)target;
+
+            // Create the plane GameObject
+            var planeGO = new GameObject(targetId + "_TargetPlane");
+            planeGO.transform.SetParent(tracker.transform, false);
+            planeGO.tag = "EditorOnly"; // Won't be included in builds
+
+            // Add a quad mesh to visualize the image target
+            var meshFilter = planeGO.AddComponent<MeshFilter>();
+            var meshRenderer = planeGO.AddComponent<MeshRenderer>();
+
+            // Create quad mesh (on XZ plane, matching how 8th Wall sends tracking data)
+            var quad = new Mesh { name = "TargetPlaneQuad" };
+            float size = 0.15f; // Half-size of the plane
+
+            // Find the target image to get aspect ratio
+            Texture2D targetImage = FindTargetImage(targetId);
+            float aspect = targetImage != null ? (float)targetImage.width / targetImage.height : 1f;
+
+            quad.vertices = new Vector3[]
+            {
+                new Vector3(-size * aspect, 0, -size),
+                new Vector3( size * aspect, 0, -size),
+                new Vector3( size * aspect, 0,  size),
+                new Vector3(-size * aspect, 0,  size)
+            };
+            quad.uv = new Vector2[]
+            {
+                new Vector2(0, 0), new Vector2(1, 0),
+                new Vector2(1, 1), new Vector2(0, 1)
+            };
+            quad.triangles = new int[] { 0, 2, 1, 0, 3, 2 };
+            quad.RecalculateNormals();
+            meshFilter.sharedMesh = quad;
+
+            // Create material with the target image
+            var mat = new Material(Shader.Find("Unlit/Transparent"));
+            if (mat.shader == null) mat = new Material(Shader.Find("Sprites/Default"));
+            if (targetImage != null)
+            {
+                mat.mainTexture = targetImage;
+                mat.color = new Color(1, 1, 1, 0.8f); // Slightly transparent
+            }
+            else
+            {
+                mat.color = new Color(0, 0.9f, 0.4f, 0.3f); // Green placeholder
+            }
+            mat.name = targetId + "_PlaneMat";
+
+            // Save material as asset
+            string matFolder = "Assets/XR8WebAR/Editor/TargetPlaneMaterials";
+            if (!AssetDatabase.IsValidFolder(matFolder))
+            {
+                if (!AssetDatabase.IsValidFolder("Assets/XR8WebAR/Editor"))
+                    AssetDatabase.CreateFolder("Assets/XR8WebAR", "Editor");
+                AssetDatabase.CreateFolder("Assets/XR8WebAR/Editor", "TargetPlaneMaterials");
+            }
+            AssetDatabase.CreateAsset(mat, matFolder + "/" + mat.name + ".mat");
+            meshRenderer.sharedMaterial = mat;
+
+            // Disable shadows
+            meshRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            meshRenderer.receiveShadows = false;
+
+            // Reparent the content under the plane if it exists
+            var contentTransform = transformProp.objectReferenceValue as Transform;
+            if (contentTransform != null && contentTransform != tracker.transform)
+            {
+                Undo.SetTransformParent(contentTransform, planeGO.transform,
+                    "Reparent content under target plane");
+            }
+
+            // Register undo
+            Undo.RegisterCreatedObjectUndo(planeGO, "Create Target Plane");
+
+            // Assign the anchor
+            anchorProp.objectReferenceValue = planeGO.transform;
+            serializedObject.ApplyModifiedProperties();
+
+            // Select it so the user can immediately manipulate it
+            Selection.activeGameObject = planeGO;
+            SceneView.FrameLastActiveSceneView();
+
+            Debug.Log("[XR8Editor] Created target plane '" + planeGO.name +
+                "'. Select it in the scene to position your content relative to the image target.");
+        }
+
+        /// <summary>Finds the target image texture from common locations.</summary>
+        private Texture2D FindTargetImage(string targetId)
+        {
+            string[] searchPaths = {
+                "Assets/image-targets",
+                "Assets/ImageTargets",
+                "Assets/StreamingAssets/image-targets",
+                "Assets/XR8WebAR/Targets"
+            };
+            string[] suffixes = { "_original", "_luminance", "", "_thumb" };
+            string[] exts = { ".jpg", ".png", ".jpeg" };
+
+            foreach (var dir in searchPaths)
+            {
+                if (!Directory.Exists(dir)) continue;
+                foreach (var suffix in suffixes)
+                {
+                    foreach (var ext in exts)
+                    {
+                        string path = Path.Combine(dir, targetId + suffix + ext).Replace("\\", "/");
+                        var tex = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                        if (tex != null) return tex;
+                    }
+                }
+            }
+            return null;
         }
 
         // =========================================================================
@@ -501,6 +684,22 @@ namespace XR8WebAR.Editor
             }
 
             EditorGUILayout.EndVertical();
+        }
+
+        /// <summary>Derives a clean target ID from a filename.</summary>
+        private string DeriveTargetId(string fileName)
+        {
+            string[] suffixes = { "_original", "_luminance", "_thumb", "_target", "-original", "-luminance", "-thumb" };
+            string name = fileName;
+            foreach (var suffix in suffixes)
+            {
+                if (name.EndsWith(suffix, System.StringComparison.OrdinalIgnoreCase))
+                {
+                    name = name.Substring(0, name.Length - suffix.Length);
+                    break;
+                }
+            }
+            return name.Replace(' ', '-').ToLowerInvariant();
         }
 
         private void OnEnable()

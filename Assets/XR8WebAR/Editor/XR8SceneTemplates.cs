@@ -85,6 +85,30 @@ namespace XR8WebAR.Editor
                 "Creates: Camera, Manager, WorldTracker with tap-to-place",
                 () => CreateTemplate_WorldPlacement());
 
+            // Template 6: Product Viewer (Orbit)
+            DrawTemplateCard(
+                "🔄 Product Viewer (Orbit)",
+                "Camera orbits around a 3D product.\nSwipe to rotate, pinch to zoom.\n" +
+                "Great for: e-commerce, 3D configurators, showrooms.",
+                "Creates: Camera, Manager, WorldTracker (orbit mode), gesture scripts",
+                () => CreateTemplate_ProductViewer());
+
+            // Template 7: Surface Placement with Indicator
+            DrawTemplateCard(
+                "🎯 Surface Placement with Indicator",
+                "Visual reticle follows camera, tap to place content.\n" +
+                "Great for: furniture placement, AR decorating, games.",
+                "Creates: Camera, Manager, WorldTracker, PlacementIndicator, gesture scripts",
+                () => CreateTemplate_PlacementWithIndicator());
+
+            // Template 8: GPS Scavenger Hunt
+            DrawTemplateCard(
+                "📡 GPS Scavenger Hunt",
+                "Place AR content at real GPS coordinates.\n" +
+                "Great for: scavenger hunts, outdoor tours, location-based AR.",
+                "Creates: Camera, Manager, WorldTracker, GPSTracker, sample pins",
+                () => CreateTemplate_GPSScavengerHunt());
+
             EditorGUILayout.EndScrollView();
         }
 
@@ -167,9 +191,28 @@ namespace XR8WebAR.Editor
             var obj = new GameObject("XR8ImageTracker");
             var tracker = obj.AddComponent<XR8ImageTracker>();
 
-            // Content root
+            // Create target plane (anchor) — a visible quad representing the image target
+            var targetPlane = new GameObject(targetName + "_TargetPlane");
+            targetPlane.transform.SetParent(obj.transform);
+            targetPlane.transform.localPosition = Vector3.zero;
+            targetPlane.tag = "EditorOnly"; // Won't be included in builds
+
+            // Add quad mesh visualization
+            var mf = targetPlane.AddComponent<MeshFilter>();
+            var mr = targetPlane.AddComponent<MeshRenderer>();
+
+            var quad = CreateTargetQuad(targetName);
+            mf.sharedMesh = quad;
+
+            // Create material with target image (if found)
+            var planeMat = CreateTargetPlaneMaterial(targetName);
+            mr.sharedMaterial = planeMat;
+            mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            mr.receiveShadows = false;
+
+            // Content root (child of target plane)
             var content = new GameObject(targetName + "_Content");
-            content.transform.SetParent(obj.transform);
+            content.transform.SetParent(targetPlane.transform);
             content.transform.localPosition = Vector3.zero;
             contentRoot = content.transform;
 
@@ -181,10 +224,97 @@ namespace XR8WebAR.Editor
             targets.InsertArrayElementAtIndex(0);
             var elem = targets.GetArrayElementAtIndex(0);
             elem.FindPropertyRelative("id").stringValue = targetName;
+            elem.FindPropertyRelative("anchor").objectReferenceValue = targetPlane.transform;
             elem.FindPropertyRelative("transform").objectReferenceValue = contentRoot;
 
             so.ApplyModifiedProperties();
             return obj;
+        }
+
+        /// <summary>Creates a flat XZ quad mesh for the target plane visualization.</summary>
+        private Mesh CreateTargetQuad(string targetName)
+        {
+            float size = 0.15f;
+            float aspect = 1f;
+
+            // Try to get aspect ratio from the target image
+            var tex = FindTargetImageForTemplate(targetName);
+            if (tex != null) aspect = (float)tex.width / tex.height;
+
+            var mesh = new Mesh { name = targetName + "_PlaneQuad" };
+            mesh.vertices = new Vector3[]
+            {
+                new Vector3(-size * aspect, 0, -size),
+                new Vector3( size * aspect, 0, -size),
+                new Vector3( size * aspect, 0,  size),
+                new Vector3(-size * aspect, 0,  size)
+            };
+            mesh.uv = new Vector2[]
+            {
+                new Vector2(0, 0), new Vector2(1, 0),
+                new Vector2(1, 1), new Vector2(0, 1)
+            };
+            mesh.triangles = new int[] { 0, 2, 1, 0, 3, 2 };
+            mesh.RecalculateNormals();
+            return mesh;
+        }
+
+        /// <summary>Creates and saves a material with the target image texture.</summary>
+        private Material CreateTargetPlaneMaterial(string targetName)
+        {
+            var tex = FindTargetImageForTemplate(targetName);
+            var shader = Shader.Find("Unlit/Transparent");
+            if (shader == null) shader = Shader.Find("Sprites/Default");
+            var mat = new Material(shader);
+            if (tex != null)
+            {
+                mat.mainTexture = tex;
+                mat.color = new Color(1, 1, 1, 0.8f);
+            }
+            else
+            {
+                mat.color = new Color(0, 0.9f, 0.4f, 0.3f);
+            }
+            mat.name = targetName + "_PlaneMat";
+
+            // Save as asset
+            string matFolder = "Assets/XR8WebAR/Editor/TargetPlaneMaterials";
+            if (!AssetDatabase.IsValidFolder(matFolder))
+            {
+                if (!AssetDatabase.IsValidFolder("Assets/XR8WebAR/Editor"))
+                    AssetDatabase.CreateFolder("Assets/XR8WebAR", "Editor");
+                AssetDatabase.CreateFolder("Assets/XR8WebAR/Editor", "TargetPlaneMaterials");
+            }
+            AssetDatabase.CreateAsset(mat, matFolder + "/" + mat.name + ".mat");
+            return mat;
+        }
+
+        /// <summary>Finds a target image texture from common project locations.</summary>
+        private Texture2D FindTargetImageForTemplate(string targetId)
+        {
+            string[] searchPaths = {
+                "Assets/image-targets",
+                "Assets/ImageTargets",
+                "Assets/StreamingAssets/image-targets",
+                "Assets/XR8WebAR/Targets"
+            };
+            string[] suffixes = { "_original", "_luminance", "", "_thumb" };
+            string[] exts = { ".jpg", ".png", ".jpeg" };
+
+            foreach (var dir in searchPaths)
+            {
+                if (!System.IO.Directory.Exists(dir)) continue;
+                foreach (var suffix in suffixes)
+                {
+                    foreach (var ext in exts)
+                    {
+                        string path = System.IO.Path.Combine(dir, targetId + suffix + ext).Replace("\\", "/");
+                        var found = AssetDatabase.LoadAssetAtPath<Texture2D>(path);
+                        if (found != null) return found;
+                    }
+                }
+            }
+            return null;
         }
 
         private GameObject CreateWorldTracker()
@@ -536,6 +666,208 @@ namespace XR8WebAR.Editor
                 "• Replace PlacementObject with your 3D model (or make it a prefab)\n" +
                 "• Use XR8WorldTracker.TapToPlace() from a UI button\n" +
                 "• Objects will appear on detected surfaces");
+        }
+
+        // =============================================
+        // TEMPLATE 6: PRODUCT VIEWER (ORBIT)
+        // =============================================
+
+        private void CreateTemplate_ProductViewer()
+        {
+            var camObj = CreateARCamera();
+            var cam = camObj.GetComponent<Camera>();
+            var xr8Cam = camObj.GetComponent<XR8Camera>();
+
+            var mgrObj = CreateManager(cam, xr8Cam, world: true);
+            var worldObj = CreateWorldTracker();
+
+            // Product to orbit around
+            var product = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            product.name = "ProductModel";
+            product.transform.position = new Vector3(0, 0, 1f);
+            product.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+            var pRenderer = product.GetComponent<Renderer>();
+            pRenderer.material = new Material(Shader.Find("Standard"));
+            pRenderer.material.color = new Color(0.8f, 0.3f, 0.2f);
+            pRenderer.material.SetFloat("_Metallic", 0.6f);
+            pRenderer.material.SetFloat("_Glossiness", 0.8f);
+            var pCol = product.GetComponent<Collider>();
+            if (pCol) DestroyImmediate(pCol);
+
+            // Configure world tracker for orbit mode
+            var worldTracker = worldObj.GetComponent<XR8WorldTracker>();
+            var worldSo = new SerializedObject(worldTracker);
+            worldSo.FindProperty("trackerCam").objectReferenceValue = cam;
+            worldSo.FindProperty("mode").enumValueIndex = (int)XR8WorldTracker.TrackingMode.Orbit;
+            worldSo.FindProperty("orbitCenter").objectReferenceValue = product.transform;
+            worldSo.FindProperty("orbitDistance").floatValue = 1f;
+            worldSo.FindProperty("useSmoothing").boolValue = true;
+            worldSo.FindProperty("smoothFactor").floatValue = 10f;
+            worldSo.FindProperty("mainContent").objectReferenceValue = product;
+            worldSo.ApplyModifiedProperties();
+
+            var mgrSo = new SerializedObject(mgrObj.GetComponent<XR8Manager>());
+            mgrSo.FindProperty("worldTracker").objectReferenceValue = worldTracker;
+            mgrSo.ApplyModifiedProperties();
+
+            // Add directional light for product showcase
+            var lightObj = new GameObject("ProductLight");
+            var light = lightObj.AddComponent<Light>();
+            light.type = LightType.Directional;
+            light.intensity = 1.2f;
+            light.color = new Color(1f, 0.95f, 0.9f);
+            lightObj.transform.rotation = Quaternion.Euler(45f, -30f, 0f);
+
+            MarkDirtyAndSelect(product);
+            ShowResult("Product Viewer (Orbit)",
+                "• Replace ProductModel sphere with your 3D product\n" +
+                "• Swipe to rotate around the product\n" +
+                "• Pinch to zoom in/out\n" +
+                "• Adjust orbit distance in WorldTracker inspector");
+        }
+
+        // =============================================
+        // TEMPLATE 7: SURFACE PLACEMENT WITH INDICATOR
+        // =============================================
+
+        private void CreateTemplate_PlacementWithIndicator()
+        {
+            var camObj = CreateARCamera();
+            var cam = camObj.GetComponent<Camera>();
+            var xr8Cam = camObj.GetComponent<XR8Camera>();
+
+            var mgrObj = CreateManager(cam, xr8Cam, world: true);
+            var worldObj = CreateWorldTracker();
+
+            // Content root (hidden until placed)
+            var contentRoot = new GameObject("PlacedContent");
+            contentRoot.transform.position = Vector3.zero;
+
+            // Sample content
+            var sampleObj = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            sampleObj.name = "FurnitureItem";
+            sampleObj.transform.SetParent(contentRoot.transform);
+            sampleObj.transform.localPosition = new Vector3(0, 0.075f, 0);
+            sampleObj.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
+            var sRenderer = sampleObj.GetComponent<Renderer>();
+            sRenderer.material = new Material(Shader.Find("Standard"));
+            sRenderer.material.color = new Color(0.4f, 0.6f, 0.9f);
+            var sCol = sampleObj.GetComponent<Collider>();
+            if (sCol) DestroyImmediate(sCol);
+
+            // Placement indicator visual (reticle)
+            var indicatorObj = new GameObject("PlacementReticle");
+            var indicatorQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            indicatorQuad.name = "ReticleVisual";
+            indicatorQuad.transform.SetParent(indicatorObj.transform);
+            indicatorQuad.transform.localPosition = Vector3.zero;
+            indicatorQuad.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
+            indicatorQuad.transform.localScale = new Vector3(0.2f, 0.2f, 1f);
+            var iRenderer = indicatorQuad.GetComponent<Renderer>();
+            var iShader = Shader.Find("Unlit/Transparent");
+            if (iShader == null) iShader = Shader.Find("Sprites/Default");
+            iRenderer.material = new Material(iShader);
+            iRenderer.material.color = new Color(0f, 1f, 0.5f, 0.5f);
+            var iCol = indicatorQuad.GetComponent<Collider>();
+            if (iCol) DestroyImmediate(iCol);
+
+            // Add PlacementIndicator component
+            var indicator = worldObj.AddComponent<XR8PlacementIndicator>();
+            var indSo = new SerializedObject(indicator);
+            indSo.FindProperty("trackerCam").objectReferenceValue = cam;
+            indSo.FindProperty("indicatorVisual").objectReferenceValue = indicatorObj;
+            indSo.FindProperty("contentRoot").objectReferenceValue = contentRoot;
+            indSo.FindProperty("hideContentUntilPlaced").boolValue = true;
+            indSo.ApplyModifiedProperties();
+
+            // Add gesture scripts to content
+            contentRoot.AddComponent<XR8SwipeToRotate>();
+            contentRoot.AddComponent<XR8PinchToScale>();
+
+            // Configure world tracker
+            var worldTracker = worldObj.GetComponent<XR8WorldTracker>();
+            var worldSo = new SerializedObject(worldTracker);
+            worldSo.FindProperty("trackerCam").objectReferenceValue = cam;
+            worldSo.FindProperty("usePlacementIndicator").boolValue = true;
+            worldSo.FindProperty("placementIndicator").objectReferenceValue = indicator;
+            worldSo.FindProperty("mainContent").objectReferenceValue = contentRoot;
+            worldSo.ApplyModifiedProperties();
+
+            var mgrSo = new SerializedObject(mgrObj.GetComponent<XR8Manager>());
+            mgrSo.FindProperty("worldTracker").objectReferenceValue = worldTracker;
+            mgrSo.ApplyModifiedProperties();
+
+            MarkDirtyAndSelect(worldObj);
+            ShowResult("Surface Placement with Indicator",
+                "• Green reticle follows camera aim at the floor\n" +
+                "• Call WorldTracker.PlaceOrigin() from a UI button to place content\n" +
+                "• After placement: swipe to rotate, pinch to scale\n" +
+                "• Replace FurnitureItem with your 3D model\n" +
+                "• Call WorldTracker.ResetOrigin() to re-place");
+        }
+
+        // =============================================
+        // TEMPLATE 8: GPS SCAVENGER HUNT
+        // =============================================
+
+        private void CreateTemplate_GPSScavengerHunt()
+        {
+            var camObj = CreateARCamera();
+            var cam = camObj.GetComponent<Camera>();
+            var xr8Cam = camObj.GetComponent<XR8Camera>();
+
+            var mgrObj = CreateManager(cam, xr8Cam, world: true);
+            var worldObj = CreateWorldTracker();
+
+            var worldSo = new SerializedObject(worldObj.GetComponent<XR8WorldTracker>());
+            worldSo.FindProperty("trackerCam").objectReferenceValue = cam;
+            worldSo.ApplyModifiedProperties();
+
+            var mgrSo = new SerializedObject(mgrObj.GetComponent<XR8Manager>());
+            mgrSo.FindProperty("worldTracker").objectReferenceValue = worldObj.GetComponent<XR8WorldTracker>();
+            mgrSo.ApplyModifiedProperties();
+
+            // GPS Tracker
+            var gpsTrackerObj = new GameObject("XR8GPSTracker");
+            gpsTrackerObj.AddComponent<XR8GPSTracker>();
+
+            // Sample GPS Pins
+            var pinColors = new Color[]
+            {
+                new Color(1f, 0.3f, 0.2f),  // Red
+                new Color(0.2f, 0.8f, 0.3f), // Green
+                new Color(0.3f, 0.5f, 1f),   // Blue
+            };
+            string[] pinNames = { "Pin_Treasure1", "Pin_Treasure2", "Pin_Treasure3" };
+            float[] latOffsets = { 0.0003f, -0.0002f, 0.0001f };
+            float[] lonOffsets = { 0.0001f, 0.0003f, -0.0003f };
+
+            for (int i = 0; i < 3; i++)
+            {
+                var pinObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+                pinObj.name = pinNames[i];
+                pinObj.transform.localScale = new Vector3(0.3f, 0.3f, 0.3f);
+                pinObj.transform.position = new Vector3(i * 2f, 0.15f, 3f);
+
+                var pinRenderer = pinObj.GetComponent<Renderer>();
+                pinRenderer.material = new Material(Shader.Find("Standard"));
+                pinRenderer.material.color = pinColors[i];
+                pinRenderer.material.SetFloat("_Metallic", 0.3f);
+
+                var pin = pinObj.AddComponent<XR8GPSPin>();
+                pin.pinId = "treasure-" + (i + 1);
+                pin.latitude = 39.1031 + latOffsets[i];
+                pin.longitude = -84.5120 + lonOffsets[i];
+            }
+
+            MarkDirtyAndSelect(gpsTrackerObj);
+            ShowResult("GPS Scavenger Hunt",
+                "• 3 sample GPS pins created at Cincinnati coordinates\n" +
+                "• Change lat/lon on each GPSPin to your desired locations\n" +
+                "• Pins auto-show/hide based on activationRadius (default 50m)\n" +
+                "• OnEnteredPin / OnExitedPin events fire at pinRadius (5m)\n" +
+                "• Test in editor with WASD keys to simulate GPS movement\n" +
+                "• Replace spheres with your treasure/landmark 3D models");
         }
 
         // =============================================

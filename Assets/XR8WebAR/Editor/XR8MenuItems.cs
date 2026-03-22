@@ -77,34 +77,17 @@ namespace XR8WebAR.Editor
             Debug.Log("[XR8] Created Face Tracker");
         }
 
-        [MenuItem("GameObject/XR8 WebAR/Image Target Content", false, 30)]
-        static void CreateImageTargetContent()
+        [MenuItem("GameObject/XR8 WebAR/Create Image Target (from image)", false, 30)]
+        static void CreateImageTargetFromMenu()
         {
-            var obj = new GameObject("ImageTarget_Content");
-            Undo.RegisterCreatedObjectUndo(obj, "Create Image Target Content");
+            // Delegate to the factory
+            XR8ImageTargetFactory.CreateImageTarget();
+        }
 
-            // If something is selected, parent to it
-            if (Selection.activeGameObject != null)
-            {
-                obj.transform.SetParent(Selection.activeGameObject.transform);
-                obj.transform.localPosition = Vector3.zero;
-                obj.transform.localRotation = Quaternion.identity;
-            }
-
-            // Add a placeholder quad so you can see something
-            var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
-            quad.name = "Overlay";
-            quad.transform.SetParent(obj.transform);
-            quad.transform.localPosition = Vector3.zero;
-            quad.transform.localRotation = Quaternion.Euler(90f, 0, 0);
-            quad.transform.localScale = new Vector3(0.2f, 0.2f, 1f);
-
-            // Remove collider from the quad
-            var collider = quad.GetComponent<Collider>();
-            if (collider != null) Object.DestroyImmediate(collider);
-
-            Selection.activeGameObject = obj;
-            Debug.Log("[XR8] Created Image Target Content — assign this to your image target's Content Root");
+        [MenuItem("GameObject/XR8 WebAR/Create Image Target (from image)", true)]
+        static bool ValidateCreateImageTargetFromMenu()
+        {
+            return Selection.activeObject is Texture2D;
         }
 
         // =================================================================
@@ -136,24 +119,17 @@ namespace XR8WebAR.Editor
             Undo.RegisterCreatedObjectUndo(trackerObj, "Create Image Tracker");
             trackerObj.AddComponent<XR8ImageTracker>();
 
-            // 4. Content placeholder
-            var contentObj = new GameObject("ImageTarget_Content");
-            Undo.RegisterCreatedObjectUndo(contentObj, "Create Content");
-            contentObj.transform.SetParent(trackerObj.transform);
-            contentObj.transform.localPosition = Vector3.zero;
-
             Selection.activeGameObject = managerObj;
 
             EditorUtility.DisplayDialog("XR8 Scene Setup Complete",
                 "Created:\n" +
                 "• AR Camera Rig (with XR8Camera)\n" +
                 "• XR8 Manager\n" +
-                "• XR8 Image Tracker\n" +
-                "• Image Target Content placeholder\n\n" +
+                "• XR8 Image Tracker\n\n" +
                 "Next steps:\n" +
-                "1. In XR8 Manager, configure tracking modes\n" +
-                "2. In XR8 Image Tracker, add your image targets\n" +
-                "3. Add 3D content as children of ImageTarget_Content",
+                "1. Select an image in Project > Assets > XR8 WebAR > Create > Image Target\n" +
+                "2. The Image Target prefab auto-wires into the tracker\n" +
+                "3. Drag 3D content as children of the target",
                 "Got it!");
 
             Debug.Log("[XR8] Complete AR scene setup created");
