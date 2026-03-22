@@ -180,16 +180,90 @@ namespace XR8WebAR.Editor
             GUI.color = Color.white;
             EditorGUILayout.BeginVertical(EditorStyles.helpBox);
 
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("enableDesktopPreview"),
-                new GUIContent("Enable Preview", "Simulate tracking in the Unity Editor"));
-            EditorGUILayout.PropertyField(serializedObject.FindProperty("previewReferenceImage"),
-                new GUIContent("Reference Image", "Image to simulate as camera input (optional)"));
+            // Primary mode dropdown
+            EditorGUILayout.PropertyField(serializedObject.FindProperty("previewMode"),
+                new GUIContent("Preview Mode", "Select a simulation mode for in-editor testing"));
 
-            if (serializedObject.FindProperty("enableDesktopPreview").boolValue)
+            var mode = (DesktopPreviewMode)serializedObject.FindProperty("previewMode").enumValueIndex;
+
+            if (mode != DesktopPreviewMode.None)
             {
                 EditorGUILayout.Space(3);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("previewReferenceImage"),
+                    new GUIContent("Reference Image", "Image to simulate as camera input (optional)"));
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("previewUseWebcam"),
+                    new GUIContent("Use Webcam Background"));
+
+                EditorGUILayout.Space(5);
+
+                switch (mode)
+                {
+                    case DesktopPreviewMode.Static:
+                        EditorGUILayout.HelpBox(
+                            "Target locked in front of camera.\n" +
+                            "[T] Toggle tracking  [Tab] Cycle targets\n" +
+                            "[Mouse Drag] Move  [Scroll] Distance  [R] Reset",
+                            MessageType.Info);
+                        break;
+
+                    case DesktopPreviewMode.FlyThrough:
+                        EditorGUILayout.LabelField("FlyThrough Settings", EditorStyles.miniBoldLabel);
+                        EditorGUI.indentLevel++;
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("flySpeed"),
+                            new GUIContent("Speed (m/s)"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("flyLookSensitivity"),
+                            new GUIContent("Look Sensitivity"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("autoTrackNearest"),
+                            new GUIContent("Auto-track Nearest", "Fire tracking events for nearest image target"));
+                        EditorGUI.indentLevel--;
+                        EditorGUILayout.HelpBox(
+                            "Free-fly camera like a scene editor.\n" +
+                            "[WASD] Move  [Q/E] Down/Up  [Shift] Sprint\n" +
+                            "[Right-click + Mouse] Look  [Scroll] Speed\n" +
+                            "[T] Toggle tracking  [Tab] Cycle targets",
+                            MessageType.Info);
+                        break;
+
+                    case DesktopPreviewMode.RecordedPlayback:
+                        EditorGUILayout.LabelField("Playback Settings", EditorStyles.miniBoldLabel);
+                        EditorGUI.indentLevel++;
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("playbackDataFile"),
+                            new GUIContent("Pose Data (CSV)", "CSV: id,px,py,pz,fx,fy,fz,ux,uy,uz,rx,ry,rz"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("playbackLoop"),
+                            new GUIContent("Loop"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("playbackSpeed"),
+                            new GUIContent("Playback Speed"));
+                        EditorGUI.indentLevel--;
+                        EditorGUILayout.HelpBox(
+                            "Replay recorded pose data from CSV.\n" +
+                            "[Space] Pause/Resume  [←/→] Step frame\n" +
+                            "[R] Restart from beginning",
+                            MessageType.Info);
+                        break;
+
+                    case DesktopPreviewMode.SimulatedNoise:
+                        EditorGUILayout.LabelField("Noise Settings", EditorStyles.miniBoldLabel);
+                        EditorGUI.indentLevel++;
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("positionJitter"),
+                            new GUIContent("Position Jitter (m)", "Perlin noise position offset magnitude"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("rotationJitter"),
+                            new GUIContent("Rotation Jitter (°)", "Perlin noise rotation offset magnitude"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("trackingLossChance"),
+                            new GUIContent("Loss Chance", "Probability per frame of simulated tracking loss"));
+                        EditorGUILayout.PropertyField(serializedObject.FindProperty("trackingLossDuration"),
+                            new GUIContent("Loss Duration (s)", "Min/Max seconds tracking stays lost"));
+                        EditorGUI.indentLevel--;
+                        EditorGUILayout.HelpBox(
+                            "Static mode + realistic tracking noise.\n" +
+                            "Simulates jitter, drift, and random tracking loss.\n" +
+                            "Same controls as Static mode.",
+                            MessageType.Info);
+                        break;
+                }
+
+                EditorGUILayout.Space(3);
                 GUI.color = Color.yellow;
-                EditorGUILayout.LabelField("⚠ Preview mode active — XR8 engine will NOT start in editor",
+                EditorGUILayout.LabelField("⚠ Preview active — XR8 engine will NOT start in editor",
                     EditorStyles.miniLabel);
                 GUI.color = Color.white;
             }
