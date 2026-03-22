@@ -134,8 +134,9 @@ namespace XR8WebAR
                 }
 
                 targets.Add(target.id, target);
-                if (target.transform.GetComponent<Renderer>() != null)
-                    target.transform.GetComponent<Renderer>().enabled = false;
+                var renderer = target.transform.GetComponent<Renderer>();
+                if (renderer != null)
+                    renderer.enabled = false;
                 // Deactivate the anchor (which hides all children)
                 target.anchor.gameObject.SetActive(false);
 

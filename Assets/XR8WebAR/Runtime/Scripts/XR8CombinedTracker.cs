@@ -384,9 +384,9 @@ namespace XR8WebAR
             }
 
             return new Vector3(
-                lockXZToImage ? origin.x : origin.x,
+                origin.x,
                 bestY + floorOffset,
-                lockXZToImage ? origin.z : origin.z
+                origin.z
             );
         }
 

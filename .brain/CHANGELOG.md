@@ -6,6 +6,23 @@
 
 ---
 
+## 2026-03-22 — InputSystem Fix (afternoon, follow-up)
+
+**Agent:** Antigravity (Gemini)  
+**What was done:**
+- Fixed `InvalidOperationException` spam — all 3 desktop preview files used legacy `Input.*` API
+- `XR8WorldTracker.Update_EditorDebug()` — 14 `Input.GetKey` → `Keyboard.current`
+- `XR8Manager.DesktopPreviewUpdateLoop/HandleInput` — mouse + keys → `Mouse/Keyboard.current`
+- `XR8FaceTracker.PreviewHandleInput/UpdateFace` — keys + mouse → `Mouse/Keyboard.current`
+- Repositioned test scene objects (camera moved from z=-10 to z=-3, objects scaled up)
+- Wired XR8Camera Component reference on XR8Manager
+
+**Files changed:** `XR8WorldTracker.cs`, `XR8Manager.cs`, `XR8FaceTracker.cs`  
+**Known issues:** Only CS0414 warnings remain (unused fields, harmless)  
+**Next steps:** Press Play and test desktop preview controls (WASD, mouse, scroll)
+
+---
+
 ## 2026-03-22 — AG Bridge Setup for Remote Phone Control (afternoon)
 
 **What:** Set up AG Bridge (Mario4272/ag_bridge v0.6.5) for remote phone control of Antigravity sessions.

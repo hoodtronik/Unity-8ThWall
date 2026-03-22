@@ -899,7 +899,7 @@ MonoBehaviour:
   enableImageTracking: 1
   enableWorldTracking: 1
   enableFaceTracking: 0
-  arCamera: {fileID: 0}
+  arCamera: {fileID: 330585545}
   xr8CameraComponent: {fileID: 1747687576}
   imageTracker: {fileID: 0}
   worldTracker: {fileID: 0}
@@ -934,7 +934,7 @@ Transform:
   m_GameObject: {fileID: 1747687574}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: -6.06}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
