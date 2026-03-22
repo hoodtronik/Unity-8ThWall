@@ -14,6 +14,7 @@ namespace XR8WebAR.Editor
         private const string ScenesRoot = "Assets/Scenes/Templates";
         private bool[] selected = new bool[19];
         private Vector2 scroll;
+        private bool addToScene = false;
         private static readonly string[] SceneNames = {
             "AR Wall Gallery",
             "AR Museum Tour",
@@ -60,6 +61,24 @@ namespace XR8WebAR.Editor
             if (GUILayout.Button("Select All")) for (int i = 0; i < selected.Length; i++) selected[i] = true;
             if (GUILayout.Button("Deselect All")) for (int i = 0; i < selected.Length; i++) selected[i] = false;
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.Space(4);
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Scene Mode", GUILayout.Width(EditorGUIUtility.labelWidth));
+            GUI.backgroundColor = !addToScene ? new Color(0.3f, 0.85f, 0.5f) : new Color(0.9f, 0.9f, 0.9f);
+            if (GUILayout.Button("🆕 New Scenes", EditorStyles.miniButtonLeft))
+                addToScene = false;
+            GUI.backgroundColor = addToScene ? new Color(0.3f, 0.7f, 1f) : new Color(0.9f, 0.9f, 0.9f);
+            if (GUILayout.Button("➕ Add to Scene", EditorStyles.miniButtonRight))
+                addToScene = true;
+            GUI.backgroundColor = Color.white;
+            EditorGUILayout.EndHorizontal();
+
+            if (addToScene)
+                EditorGUILayout.HelpBox("Adds selected template objects into the current scene. Only one template can be added at a time.", MessageType.None);
+            else
+                EditorGUILayout.HelpBox("Creates each selected template as a separate .unity file in " + ScenesRoot, MessageType.None);
+
             EditorGUILayout.Space(4);
 
             scroll = EditorGUILayout.BeginScrollView(scroll);
@@ -82,15 +101,30 @@ namespace XR8WebAR.Editor
 
             EditorGUILayout.Space(8);
             GUI.backgroundColor = new Color(0.3f, 0.85f, 0.4f);
-            if (GUILayout.Button("🚀 Generate Selected Scenes", GUILayout.Height(32)))
+            string genLabel = addToScene ? "➕ Add Selected to Scene" : "🚀 Generate Selected Scenes";
+            if (GUILayout.Button(genLabel, GUILayout.Height(32)))
             {
                 int count = 0;
                 for (int i = 0; i < selected.Length; i++) if (selected[i]) count++;
                 if (count == 0) { EditorUtility.DisplayDialog("Nothing Selected", "Select at least one scene.", "OK"); return; }
-                if (EditorUtility.DisplayDialog("Generate Scenes",
-                    $"Create {count} scene(s) in {ScenesRoot}?\nExisting scenes with matching names will be overwritten.", "Generate", "Cancel"))
+
+                if (addToScene)
                 {
-                    GenerateScenes();
+                    if (count > 1)
+                    {
+                        if (!EditorUtility.DisplayDialog("Multiple Templates",
+                            $"Adding {count} templates to the current scene.\nThis may create duplicate cameras/managers.\n\nContinue?", "Add All", "Cancel"))
+                            return;
+                    }
+                    GenerateIntoCurrentScene();
+                }
+                else
+                {
+                    if (EditorUtility.DisplayDialog("Generate Scenes",
+                        $"Create {count} scene(s) in {ScenesRoot}?\nExisting scenes with matching names will be overwritten.", "Generate", "Cancel"))
+                    {
+                        GenerateScenes();
+                    }
                 }
             }
             GUI.backgroundColor = Color.white;
@@ -104,7 +138,7 @@ namespace XR8WebAR.Editor
             {
                 if (!selected[i]) continue;
                 EditorUtility.DisplayProgressBar("Generating Scenes", SceneNames[i], (float)i / SceneNames.Length);
-                CreateScene(i);
+                CreateScene(i, false);
                 created++;
             }
             EditorUtility.ClearProgressBar();
@@ -113,13 +147,32 @@ namespace XR8WebAR.Editor
             Debug.Log($"[XR8 Generator] ✅ Created {created} scene templates in {ScenesRoot}");
         }
 
+        private void GenerateIntoCurrentScene()
+        {
+            int added = 0;
+            for (int i = 0; i < SceneNames.Length; i++)
+            {
+                if (!selected[i]) continue;
+                EditorUtility.DisplayProgressBar("Adding to Scene", SceneNames[i], (float)i / SceneNames.Length);
+                CreateScene(i, true);
+                added++;
+            }
+            EditorUtility.ClearProgressBar();
+            EditorSceneManager.MarkSceneDirty(EditorSceneManager.GetActiveScene());
+            EditorUtility.DisplayDialog("Done! 🎉", $"Added {added} template(s) to current scene.", "OK");
+            Debug.Log($"[XR8 Generator] ✅ Added {added} templates to current scene");
+        }
+
         // =============================================================
         // SCENE CREATION
         // =============================================================
 
-        private void CreateScene(int index)
+        private void CreateScene(int index, bool intoCurrentScene)
         {
-            var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            if (!intoCurrentScene)
+            {
+                var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            }
 
             // Shared setup: camera, light, manager
             var camObj = CreateCamera();
@@ -150,8 +203,12 @@ namespace XR8WebAR.Editor
                 case 18: Build_PhotoOp(cam, xr8Cam); break;
             }
 
-            string path = $"{ScenesRoot}/{SceneNames[index]}.unity";
-            EditorSceneManager.SaveScene(scene, path);
+            if (!intoCurrentScene)
+            {
+                EnsureFolder(ScenesRoot);
+                string path = $"{ScenesRoot}/{SceneNames[index]}.unity";
+                EditorSceneManager.SaveScene(EditorSceneManager.GetActiveScene(), path);
+            }
         }
 
         // =============================================================

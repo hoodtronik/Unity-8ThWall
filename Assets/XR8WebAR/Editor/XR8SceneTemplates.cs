@@ -20,6 +20,7 @@ namespace XR8WebAR.Editor
     {
         private Vector2 scrollPos;
         private string targetId = "my-target";
+        private bool startNewScene = true;
 
         [MenuItem("XR8 WebAR/Scene Templates", false, 1)]
         public static void ShowWindow()
@@ -41,6 +42,24 @@ namespace XR8WebAR.Editor
             EditorGUILayout.Space(4);
 
             targetId = EditorGUILayout.TextField("Image Target ID", targetId);
+            EditorGUILayout.Space(4);
+
+            EditorGUILayout.BeginHorizontal();
+            EditorGUILayout.LabelField("Scene Mode", GUILayout.Width(EditorGUIUtility.labelWidth));
+            GUI.backgroundColor = startNewScene ? new Color(0.3f, 0.85f, 0.5f) : new Color(0.9f, 0.9f, 0.9f);
+            if (GUILayout.Button("🆕 New Scene", startNewScene ? EditorStyles.miniButtonLeft : EditorStyles.miniButtonLeft))
+                startNewScene = true;
+            GUI.backgroundColor = !startNewScene ? new Color(0.3f, 0.7f, 1f) : new Color(0.9f, 0.9f, 0.9f);
+            if (GUILayout.Button("➕ Add to Scene", !startNewScene ? EditorStyles.miniButtonRight : EditorStyles.miniButtonRight))
+                startNewScene = false;
+            GUI.backgroundColor = Color.white;
+            EditorGUILayout.EndHorizontal();
+
+            if (startNewScene)
+                EditorGUILayout.HelpBox("Creates a fresh empty scene, then adds template objects.", MessageType.None);
+            else
+                EditorGUILayout.HelpBox("Adds template objects into the current scene. Existing XR8 components will be replaced.", MessageType.None);
+
             EditorGUILayout.Space(8);
 
             scrollPos = EditorGUILayout.BeginScrollView(scrollPos);
@@ -124,9 +143,10 @@ namespace XR8WebAR.Editor
             EditorGUILayout.Space(4);
 
             GUI.backgroundColor = new Color(0.3f, 0.75f, 1f);
-            if (GUILayout.Button("Create Scene", GUILayout.Height(26)))
+            string btnLabel = startNewScene ? "🆕 Create New Scene" : "➕ Add to Scene";
+            if (GUILayout.Button(btnLabel, GUILayout.Height(26)))
             {
-                if (ConfirmNewScene())
+                if (PrepareScene())
                     onCreate();
             }
             GUI.backgroundColor = Color.white;
@@ -134,14 +154,31 @@ namespace XR8WebAR.Editor
             EditorGUILayout.Space(4);
         }
 
-        private bool ConfirmNewScene()
+        private bool PrepareScene()
         {
-            if (EditorSceneManager.GetActiveScene().isDirty)
+            if (startNewScene)
             {
-                int choice = EditorUtility.DisplayDialogComplex("Unsaved Changes",
-                    "Current scene has unsaved changes.", "Save & Continue", "Cancel", "Don't Save");
-                if (choice == 0) EditorSceneManager.SaveOpenScenes();
-                else if (choice == 1) return false;
+                // Save current scene if dirty
+                if (EditorSceneManager.GetActiveScene().isDirty)
+                {
+                    int choice = EditorUtility.DisplayDialogComplex("Unsaved Changes",
+                        "Current scene has unsaved changes.", "Save & Continue", "Cancel", "Don't Save");
+                    if (choice == 0) EditorSceneManager.SaveOpenScenes();
+                    else if (choice == 1) return false;
+                }
+                // Create fresh empty scene
+                EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
+            }
+            else
+            {
+                // Add to current scene — just confirm
+                if (EditorSceneManager.GetActiveScene().isDirty)
+                {
+                    int choice = EditorUtility.DisplayDialogComplex("Unsaved Changes",
+                        "Current scene has unsaved changes.", "Save & Continue", "Cancel", "Don't Save");
+                    if (choice == 0) EditorSceneManager.SaveOpenScenes();
+                    else if (choice == 1) return false;
+                }
             }
             return true;
         }
