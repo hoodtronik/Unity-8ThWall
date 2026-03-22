@@ -62,6 +62,16 @@ Use `XR8 WebAR > Scene Templates` for pre-configured scenes:
 | `GaussianSplatRenderer` | WebGL-compatible Gaussian Splat rendering (GPU instanced, pre-allocated depth sort) |
 | `GaussianSplatLoader` | PLY/splat file parser (Mobile-GS compatible) |
 
+### Advanced WebAR Features *(feature/advanced-webar branch)*
+
+| Script | Purpose |
+|---|---|
+| `XR8SemanticLayer` | Sky/person segmentation via 8th Wall LayersController — sky replacement + person occlusion |
+| `XR8ARNavMesh` | Runtime NavMesh from detected surfaces — AI characters walk on real floors |
+| `XR8DepthOcclusion` | Real depth occlusion with ground-plane fallback for non-depth devices |
+| `XR8HandTracker` | 21-point hand landmarks (MediaPipe standard) + gesture detection (pinch, point, fist, open palm, peace, thumbs up) |
+| `XR8VPSTracker` | Visual Positioning System — location-based WebAR with wayspot management |
+
 ## Installed Optimization Plugins (Pro Version)
 
 The project has these Unity Asset Store plugins installed:
@@ -94,6 +104,11 @@ Two shaders for AR portal effect:
 - `XR8WebAR/PortalInterior` — Stencil-tested, only visible through portal mask
 
 Both must share the same `Stencil Reference` value (default: 1).
+
+## Advanced Shaders
+
+- `XR8WebAR/SkyReplacement` — Mask-based sky replacement using segmentation data (used by XR8SemanticLayer)
+- `XR8WebAR/DepthOcclusion` — Writes real-world depth to Unity depth buffer for occlusion (used by XR8DepthOcclusion)
 
 ## Desktop Preview Controls & Modes
 
@@ -152,7 +167,7 @@ WebGL-compatible (no compute shaders). Workflow:
 - Runtime scripts: `Assets/XR8WebAR/Runtime/Scripts/`
 - Gaussian Splat: `Assets/XR8WebAR/Runtime/Scripts/GaussianSplat/`
 - Portal shaders: `Assets/XR8WebAR/Runtime/Shaders/`
-- JS plugins: `Assets/XR8WebAR/Runtime/Plugins/`
+- JS plugins: `Assets/XR8WebAR/Runtime/Plugins/` (includes semantic, depth, hand, VPS bridges)
 - Editor tools: `Assets/XR8WebAR/Editor/`
 - JS bridge: `Assets/WebGLTemplates/8thWallTracker/xr8-bridge.js`
 - HTML template: `Assets/WebGLTemplates/8thWallTracker/index.html`

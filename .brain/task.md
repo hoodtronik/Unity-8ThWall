@@ -1,14 +1,15 @@
 # XR8WebAR Project — Current State
 
-## Last Updated: 2026-03-21T20:07:00-04:00
+## Last Updated: 2026-03-22T18:23:00-04:00
 
-## Project Status: 🟢 Active — Post-Audit, All Critical Fixes Applied
+## Project Status: 🟢 Active — Advanced WebAR Features In Progress (feature/advanced-webar)
 
 ## Architecture Overview
 - **Framework**: 8th Wall XR8 → Unity WebGL
 - **Tracking Modes**: Image, World (6DOF/3DOF/Orbit), Face, Combined Image+World
 - **JS Bridge**: `.jslib` files → `SendMessage` ↔ C# `DllImport`
 - **Features Beyond Imaginary Labs**: Gaussian Splat rendering, Convai AI characters, DOTween FX, mesh optimization, face tracking with attachments
+- **Advanced WebAR (feature/advanced-webar)**: Semantic segmentation, AR NavMesh, depth occlusion, hand tracking, VPS
 
 ## Codebase Health
 All critical, medium, and low-priority issues from the full audit have been resolved:
@@ -52,6 +53,19 @@ All critical, medium, and low-priority issues from the full audit have been reso
 - `XR8TrackerLib.jslib` — Image + world tracker bridge (unified)
 - `XR8FaceTrackerLib.jslib` — Face tracker bridge
 - `ConvaiBridge.jslib` — Convai AI character bridge
+- `XR8SemanticLib.jslib` — Sky/person segmentation bridge *(feature/advanced-webar)*
+- `XR8DepthLib.jslib` — Depth occlusion bridge *(feature/advanced-webar)*
+- `XR8HandLib.jslib` — Hand tracking bridge *(feature/advanced-webar)*
+- `XR8VPSLib.jslib` — VPS localization bridge *(feature/advanced-webar)*
+
+### Advanced WebAR Features *(feature/advanced-webar branch)*
+- `XR8SemanticLayer.cs` — Sky/person segmentation via 8th Wall LayersController
+- `XR8ARNavMesh.cs` — Runtime NavMesh from detected surfaces for AI characters
+- `XR8DepthOcclusion.cs` — Real depth occlusion with ground-plane fallback
+- `XR8HandTracker.cs` — 21-point hand landmarks with gesture detection
+- `XR8VPSTracker.cs` — Visual Positioning System for location-based WebAR
+- `SkyReplacement.shader` — Mask-based sky replacement
+- `DepthOcclusion.shader` — Depth-buffer occlusion rendering
 
 ### Gaussian Splatting
 - `GaussianSplatRenderer.cs` — GPU instanced rendering with CPU depth sort
@@ -72,8 +86,8 @@ All features from Imaginary Labs' image and world tracking are matched or exceed
 
 ## NotebookLM
 - Notebook: "Unity-8thWall XR8WebAR" (ID: 512ab6e1-87a7-4960-90dc-744c26d766ea)
-- Sources: 90+ (docs, tutorials, code audit report)
-- Deep research running: Modern WebAR optimization techniques (2025-2026)
+- Sources: 105+ (docs, tutorials, code audit report, deep research)
+- Notes: Session journal, testing checklist, advanced features documentation
 
 ## Key Design Decisions
 - Anchor-based workflow for image targets (anchor wraps content, preserving local transforms)

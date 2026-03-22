@@ -6,6 +6,36 @@
 
 ---
 
+## 2026-03-22 — Advanced WebAR Features (evening)
+
+**Agent:** Antigravity (Gemini)  
+**Branch:** `feature/advanced-webar`  
+**What was done:**
+- Researched Lightship ARDK 4.0, ARCore Geospatial, 8th Wall XR8 APIs for WebAR-feasible features
+- Created comprehensive analysis report filtering native-only vs browser-compatible features
+- Implemented **5 advanced WebAR features** (11 files, 2,316 lines):
+
+| # | Feature | Files Created |
+|---|---------|---------------|
+| 1 | **Semantic Segmentation** | `XR8SemanticLayer.cs`, `XR8SemanticLib.jslib`, `SkyReplacement.shader` |
+| 2 | **AR NavMesh** | `XR8ARNavMesh.cs` (uses XR8WorldTracker surfaces → Unity NavMesh baking) |
+| 3 | **Depth Occlusion** | `XR8DepthOcclusion.cs`, `XR8DepthLib.jslib`, `DepthOcclusion.shader` |
+| 4 | **Hand Tracking** | `XR8HandTracker.cs`, `XR8HandLib.jslib` (21-point landmarks + gestures) |
+| 5 | **VPS** | `XR8VPSTracker.cs`, `XR8VPSLib.jslib` (wayspot location AR) |
+
+**Architecture notes:**
+- All components follow existing SendMessage/jslib bridge pattern
+- XR8ARNavMesh integrates with `XR8WorldTracker.ActiveSurfaces` + `OnSurfaceDetected`
+- XR8VPSTracker integrates with existing `XR8GPSTracker` for coarse→fine positioning
+- Hand tracking uses MediaPipe 21-point standard with gesture detection (pinch, point, fist, open palm, peace, thumbs up)
+- Depth occlusion has ground-plane fallback for non-depth devices
+
+**Files created:** `XR8SemanticLayer.cs`, `XR8SemanticLib.jslib`, `SkyReplacement.shader`, `XR8ARNavMesh.cs`, `XR8DepthOcclusion.cs`, `XR8DepthLib.jslib`, `DepthOcclusion.shader`, `XR8HandTracker.cs`, `XR8HandLib.jslib`, `XR8VPSTracker.cs`, `XR8VPSLib.jslib`  
+**Committed:** `e285c96` on `feature/advanced-webar`  
+**Next steps:** Test features in WebGL build, merge to main when stable
+
+---
+
 ## 2026-03-22 — InputSystem Fix (afternoon, follow-up)
 
 **Agent:** Antigravity (Gemini)  
