@@ -349,6 +349,11 @@ namespace XR8WebAR.Editor
             Undo.RegisterCreatedObjectUndo(obj, "Video Setup Camera");
             obj.tag = "MainCamera";
 
+            // Position camera to simulate phone held over a printed target
+            // ~40cm above and slightly back for a natural viewing angle
+            obj.transform.position = new Vector3(0, 0.4f, -0.15f);
+            obj.transform.rotation = Quaternion.Euler(70f, 0, 0); // Angled down at target
+
             var cam = obj.AddComponent<Camera>();
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = Color.black;
