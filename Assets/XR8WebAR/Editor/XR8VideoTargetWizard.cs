@@ -483,37 +483,19 @@ namespace XR8WebAR.Editor
 
         private void CreateTargetPreviewQuad(GameObject anchor)
         {
-            var previewObj = new GameObject("TargetPreview");
+            var previewObj = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            previewObj.name = "TargetPreview";
             previewObj.transform.SetParent(anchor.transform);
             previewObj.transform.localPosition = Vector3.zero;
+            previewObj.transform.localRotation = Quaternion.Euler(90f, 0, 0); // Lay flat on XZ plane
+            previewObj.transform.localScale = new Vector3(quadSize.x, quadSize.y, 1f);
             previewObj.tag = "EditorOnly";
 
-            var mf = previewObj.AddComponent<MeshFilter>();
-            var mr = previewObj.AddComponent<MeshRenderer>();
+            // Remove collider
+            var col = previewObj.GetComponent<Collider>();
+            if (col != null) DestroyImmediate(col);
 
-            // Build flat XZ quad
-            float aspect = targetImage != null
-                ? (float)targetImage.width / targetImage.height
-                : quadSize.x / quadSize.y;
-            float halfW = quadSize.x * 0.5f;
-            float halfH = quadSize.y * 0.5f;
-
-            var mesh = new Mesh { name = targetId + "_PreviewQuad" };
-            mesh.vertices = new Vector3[]
-            {
-                new Vector3(-halfW, 0, -halfH),
-                new Vector3( halfW, 0, -halfH),
-                new Vector3( halfW, 0,  halfH),
-                new Vector3(-halfW, 0,  halfH)
-            };
-            mesh.uv = new Vector2[]
-            {
-                new Vector2(0, 0), new Vector2(1, 0),
-                new Vector2(1, 1), new Vector2(0, 1)
-            };
-            mesh.triangles = new int[] { 0, 2, 1, 0, 3, 2 };
-            mesh.RecalculateNormals();
-            mf.sharedMesh = mesh;
+            var mr = previewObj.GetComponent<MeshRenderer>();
 
             // Material with target image — use URP-compatible shader
             var shader = Shader.Find("Sprites/Default");
