@@ -600,7 +600,13 @@ namespace XR8WebAR
                     right = jitterRot * right;
                 }
 
-                SendTrackingCSV(previewActiveTargetId, targetPos, fwd, up, right);
+                // Convert to camera-local space because XR8 tracking data is relative to the camera
+                var localPos = camT.InverseTransformPoint(targetPos);
+                var localFwd = camT.InverseTransformDirection(fwd);
+                var localUp = camT.InverseTransformDirection(up);
+                var localRight = camT.InverseTransformDirection(right);
+
+                SendTrackingCSV(previewActiveTargetId, localPos, localFwd, localUp, localRight);
 
                 yield return null;
             }
