@@ -22,7 +22,9 @@ namespace XR8WebAR
         /// <summary>Replay a recorded pose sequence from a CSV TextAsset.</summary>
         RecordedPlayback,
         /// <summary>Static mode + configurable jitter, drift, and random tracking loss.</summary>
-        SimulatedNoise
+        SimulatedNoise,
+        /// <summary>WASD fly-through + spawns a 3D mock environment prefab + physics hit-testing.</summary>
+        MockEnvironment
     }
 
     /// <summary>
@@ -108,6 +110,10 @@ namespace XR8WebAR
         [SerializeField] private float flyLookSensitivity = 2f;
         [Tooltip("Auto-fire tracking for nearest image target")]
         [SerializeField] private bool autoTrackNearest = true;
+
+        // --- Mock Environment settings ---
+        [Tooltip("3D environment prefab (room, outdoor space) to spawn for world tracking simulation (MockEnvironment mode only)")]
+        [SerializeField] private GameObject mockEnvironmentPrefab;
 
         // --- RecordedPlayback settings ---
         [Tooltip("CSV file with recorded pose data (frame,id,px,py,pz,fx,fy,fz,ux,uy,uz,rx,ry,rz)")]
@@ -295,6 +301,7 @@ namespace XR8WebAR
                     LogStaticControls();
                     break;
                 case DesktopPreviewMode.FlyThrough:
+                case DesktopPreviewMode.MockEnvironment:
                     LogFlyThroughControls();
                     break;
                 case DesktopPreviewMode.RecordedPlayback:
@@ -318,7 +325,13 @@ namespace XR8WebAR
             }
 
             // Mode-specific init
-            if (previewMode == DesktopPreviewMode.FlyThrough)
+            if (previewMode == DesktopPreviewMode.MockEnvironment && mockEnvironmentPrefab != null)
+            {
+                Instantiate(mockEnvironmentPrefab, Vector3.zero, Quaternion.identity);
+                Debug.Log("[XR8Manager] Mock Environment spawned.");
+            }
+
+            if (previewMode == DesktopPreviewMode.FlyThrough || previewMode == DesktopPreviewMode.MockEnvironment)
             {
                 currentFlySpeed = flySpeed;
                 if (arCamera != null)
@@ -537,7 +550,7 @@ namespace XR8WebAR
                 }
 
                 // Handle mouse drag for target offset (Static/Noise only)
-                if (previewUseMouse && previewMode != DesktopPreviewMode.FlyThrough)
+                if (previewUseMouse && previewMode != DesktopPreviewMode.FlyThrough && previewMode != DesktopPreviewMode.MockEnvironment)
                 {
 #if ENABLE_INPUT_SYSTEM
                     var mouse = Mouse.current;
@@ -908,10 +921,29 @@ namespace XR8WebAR
             imageTracker.SendMessage("OnTrack", csv, SendMessageOptions.DontRequireReceiver);
         }
 
+        public void SimulateHitTest(Vector2 normalizedScreenPos)
+        {
+#if UNITY_EDITOR
+            if (previewMode != DesktopPreviewMode.MockEnvironment && previewMode != DesktopPreviewMode.FlyThrough) return;
+            if (arCamera == null || worldTracker == null) return;
+
+            Ray ray = arCamera.ViewportPointToRay(new Vector3(normalizedScreenPos.x, normalizedScreenPos.y, 0f));
+            if (Physics.Raycast(ray, out RaycastHit hit, 50f))
+            {
+                // Format CSV expected by XR8WorldTracker: posX,posY,posZ,normalX,normalY,normalZ
+                // XR8 JS engine sends Unity coordinates with Z flipped, so we un-flip them here for the parser
+                string csv = hit.point.x.ToString("F6") + "," + hit.point.y.ToString("F6") + "," + (-hit.point.z).ToString("F6") + "," +
+                             hit.normal.x.ToString("F6") + "," + hit.normal.y.ToString("F6") + "," + (-hit.normal.z).ToString("F6");
+                
+                worldTracker.SendMessage("OnHitTestResult", csv, SendMessageOptions.DontRequireReceiver);
+            }
+#endif
+        }
+
         private void Update()
         {
             DesktopPreviewHandleInput();
-            if (previewMode == DesktopPreviewMode.FlyThrough)
+            if (previewMode == DesktopPreviewMode.FlyThrough || previewMode == DesktopPreviewMode.MockEnvironment)
                 FlyThroughUpdate();
         }
 

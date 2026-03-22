@@ -661,7 +661,14 @@ namespace XR8WebAR
 #if UNITY_WEBGL && !UNITY_EDITOR
             WebGLXR8HitTest(0.5f, 0.5f);
 #else
-            Debug.Log("[XR8WorldTracker] TapToPlace only works in WebGL builds");
+            if (XR8Manager.Instance != null && XR8Manager.Instance.DesktopPreviewEnabled)
+            {
+                XR8Manager.Instance.SimulateHitTest(new Vector2(0.5f, 0.5f));
+            }
+            else
+            {
+                Debug.Log("[XR8WorldTracker] TapToPlace requires WebGL or an active XR8Manager Desktop Preview mode");
+            }
 #endif
         }
 
@@ -670,6 +677,11 @@ namespace XR8WebAR
         {
 #if UNITY_WEBGL && !UNITY_EDITOR
             WebGLXR8HitTest(normalizedScreenPos.x, normalizedScreenPos.y);
+#else
+            if (XR8Manager.Instance != null && XR8Manager.Instance.DesktopPreviewEnabled)
+            {
+                XR8Manager.Instance.SimulateHitTest(normalizedScreenPos);
+            }
 #endif
         }
 
