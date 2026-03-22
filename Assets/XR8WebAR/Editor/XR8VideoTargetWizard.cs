@@ -35,7 +35,7 @@ namespace XR8WebAR.Editor
 
         // --- Build options ---
         private bool configureWebGL = true;
-        private bool enableDesktopPreview = true;
+        private DesktopPreviewMode previewMode = DesktopPreviewMode.Static;
 
         // --- State ---
         private Vector2 scrollPos;
@@ -208,7 +208,7 @@ namespace XR8WebAR.Editor
             }
 
             EditorGUILayout.Space(4);
-            enableDesktopPreview = EditorGUILayout.Toggle("Desktop Preview", enableDesktopPreview);
+            previewMode = (DesktopPreviewMode)EditorGUILayout.EnumPopup("Preview Mode", previewMode);
             configureWebGL = EditorGUILayout.Toggle("Auto-configure WebGL", configureWebGL);
 
             EditorGUILayout.Space(16);
@@ -290,7 +290,7 @@ namespace XR8WebAR.Editor
                 mgrSo.FindProperty("enableImageTracking").boolValue = true;
                 mgrSo.FindProperty("enableWorldTracking").boolValue = false;
                 mgrSo.FindProperty("enableFaceTracking").boolValue = false;
-                mgrSo.FindProperty("enableDesktopPreview").boolValue = enableDesktopPreview;
+                mgrSo.FindProperty("previewMode").enumValueIndex = (int)previewMode;
                 mgrSo.FindProperty("imageTracker").objectReferenceValue = tracker;
                 mgrSo.ApplyModifiedProperties();
 

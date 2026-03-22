@@ -22,7 +22,7 @@ namespace XR8WebAR.Editor
         private bool setupImage = true;
         private bool setupWorld = false;
         private bool setupFace = false;
-        private bool setupDesktopPreview = true;
+        private DesktopPreviewMode setupPreviewMode = DesktopPreviewMode.Static;
         private string firstTargetId = "my-target";
         private int maxSimTargets = 1;
         private bool createSampleContent = true;
@@ -106,7 +106,7 @@ namespace XR8WebAR.Editor
             EditorGUILayout.Space(8);
 
             EditorGUILayout.LabelField("Options", EditorStyles.boldLabel);
-            setupDesktopPreview = EditorGUILayout.ToggleLeft("Enable Desktop Preview (test in editor)", setupDesktopPreview);
+            setupPreviewMode = (DesktopPreviewMode)EditorGUILayout.EnumPopup("Desktop Preview Mode", setupPreviewMode);
             autoConfigureBuild = EditorGUILayout.ToggleLeft("Auto-configure WebGL build settings", autoConfigureBuild);
 
             EditorGUILayout.Space(16);
@@ -153,7 +153,7 @@ namespace XR8WebAR.Editor
                 so.FindProperty("enableImageTracking").boolValue = setupImage;
                 so.FindProperty("enableWorldTracking").boolValue = setupWorld;
                 so.FindProperty("enableFaceTracking").boolValue = setupFace;
-                so.FindProperty("enableDesktopPreview").boolValue = setupDesktopPreview;
+                so.FindProperty("previewMode").enumValueIndex = (int)setupPreviewMode;
 
                 EditorUtility.DisplayProgressBar("XR8 Setup", "Setting up trackers...", 0.4f);
 
@@ -213,7 +213,7 @@ namespace XR8WebAR.Editor
                     (setupWorld ? "• XR8WorldTracker (surface detection)\n" : "") +
                     (setupImage && setupWorld ? "• XR8CombinedTracker (image-to-floor)\n" : "") +
                     (setupFace ? "• XR8FaceTracker\n" : "") +
-                    (setupDesktopPreview ? "• Desktop Preview enabled\n" : "") +
+                    (setupPreviewMode != DesktopPreviewMode.None ? "• Desktop Preview: " + setupPreviewMode + "\n" : "") +
                     (autoConfigureBuild ? "• WebGL build settings configured\n" : "") +
                     "\nAll components are auto-wired. Just hit Play to preview!",
                     "OK");
@@ -421,7 +421,7 @@ namespace XR8WebAR.Editor
             var faceTracker = faceObj.AddComponent<XR8FaceTracker>();
 
             // Enable desktop preview for face tracker too
-            if (setupDesktopPreview)
+            if (setupPreviewMode != DesktopPreviewMode.None)
             {
                 var faceSo = new SerializedObject(faceTracker);
                 var previewProp = faceSo.FindProperty("enableDesktopPreview");

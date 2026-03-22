@@ -196,7 +196,7 @@ namespace XR8WebAR.Editor
             so.FindProperty("enableImageTracking").boolValue = image;
             so.FindProperty("enableWorldTracking").boolValue = world;
             so.FindProperty("enableFaceTracking").boolValue = face;
-            so.FindProperty("enableDesktopPreview").boolValue = true;
+            so.FindProperty("previewMode").enumValueIndex = 1; // DesktopPreviewMode.Static
             so.FindProperty("enableSurfaceDetection").boolValue = world;
             so.ApplyModifiedProperties();
             return obj;
