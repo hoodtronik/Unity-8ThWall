@@ -259,8 +259,8 @@ namespace XR8WebAR
 #if UNITY_EDITOR
         private string previewActiveTargetId = null;
         private int previewTargetIndex = 0;
-        private float previewTargetDistance = 2f;
-        private Vector2 previewTargetOffset = Vector2.zero;
+        private Vector3 previewTargetWorldPos;
+        private Quaternion previewTargetWorldRot;
         private bool previewIsTracking = false;
         private bool previewUseMouse = true;
 
@@ -435,8 +435,11 @@ namespace XR8WebAR
             if (previewIsTracking || previewActiveTargetId == null) return;
 
             previewIsTracking = true;
-            previewTargetDistance = 2f;
-            previewTargetOffset = Vector2.zero;
+            if (arCamera != null)
+            {
+                previewTargetWorldPos = arCamera.transform.position + arCamera.transform.forward * 2f;
+                previewTargetWorldRot = Quaternion.LookRotation(-arCamera.transform.forward, Vector3.up);
+            }
 
             Debug.Log("[XR8Manager] Preview: Tracking FOUND -> '" + previewActiveTargetId + "'");
 
@@ -541,36 +544,37 @@ namespace XR8WebAR
                     if (mouse != null && mouse.leftButton.isPressed)
                     {
                         var delta = mouse.delta.ReadValue();
-                        previewTargetOffset.x += delta.x * 0.002f;
-                        previewTargetOffset.y += delta.y * 0.002f;
+                        if (arCamera != null)
+                            previewTargetWorldPos += arCamera.transform.right * (delta.x * 0.002f) + arCamera.transform.up * (delta.y * 0.002f);
                     }
 
                     float scroll = mouse != null ? mouse.scroll.ReadValue().y / 120f : 0f;
-                    if (Mathf.Abs(scroll) > 0.001f)
+                    if (Mathf.Abs(scroll) > 0.001f && arCamera != null)
                     {
-                        previewTargetDistance = Mathf.Clamp(previewTargetDistance - scroll * 2f, 0.3f, 10f);
+                        var dirToCam = (arCamera.transform.position - previewTargetWorldPos).normalized;
+                        if (dirToCam == Vector3.zero) dirToCam = -arCamera.transform.forward;
+                        previewTargetWorldPos += dirToCam * (scroll * 2f);
                     }
 #else
                     if (Input.GetMouseButton(0))
                     {
-                        previewTargetOffset.x += Input.GetAxis("Mouse X") * 0.05f;
-                        previewTargetOffset.y += Input.GetAxis("Mouse Y") * 0.05f;
+                        if (arCamera != null)
+                            previewTargetWorldPos += arCamera.transform.right * (Input.GetAxis("Mouse X") * 0.05f) + arCamera.transform.up * (Input.GetAxis("Mouse Y") * 0.05f);
                     }
 
                     float scroll = Input.GetAxis("Mouse ScrollWheel");
-                    if (Mathf.Abs(scroll) > 0.001f)
+                    if (Mathf.Abs(scroll) > 0.001f && arCamera != null)
                     {
-                        previewTargetDistance = Mathf.Clamp(previewTargetDistance - scroll * 2f, 0.3f, 10f);
+                        var dirToCam = (arCamera.transform.position - previewTargetWorldPos).normalized;
+                        if (dirToCam == Vector3.zero) dirToCam = -arCamera.transform.forward;
+                        previewTargetWorldPos += dirToCam * (scroll * 2f);
                     }
 #endif
                 }
 
-                // Compute target pose relative to camera
                 var camT = arCamera.transform;
-                var targetPos = camT.position
-                    + camT.forward * previewTargetDistance
-                    + camT.right * previewTargetOffset.x
-                    + camT.up * previewTargetOffset.y;
+                var targetPos = previewTargetWorldPos;
+                var targetRot = previewTargetWorldRot;
 
                 // SimulatedNoise: apply Perlin jitter
                 if (previewMode == DesktopPreviewMode.SimulatedNoise)
@@ -583,9 +587,9 @@ namespace XR8WebAR
                     );
                 }
 
-                var fwd = -camT.forward;
-                var up = Vector3.up;
-                var right = Vector3.Cross(up, fwd).normalized;
+                var fwd = targetRot * Vector3.forward;
+                var up = targetRot * Vector3.up;
+                var right = targetRot * Vector3.right;
 
                 // SimulatedNoise: apply rotation jitter
                 if (previewMode == DesktopPreviewMode.SimulatedNoise && rotationJitter > 0f)
@@ -800,8 +804,11 @@ namespace XR8WebAR
                 case DesktopPreviewMode.SimulatedNoise:
                     if (kb[Key.R].wasPressedThisFrame)
                     {
-                        previewTargetDistance = 2f;
-                        previewTargetOffset = Vector2.zero;
+                        if (arCamera != null)
+                        {
+                            previewTargetWorldPos = arCamera.transform.position + arCamera.transform.forward * 2f;
+                            previewTargetWorldRot = Quaternion.LookRotation(-arCamera.transform.forward, Vector3.up);
+                        }
                         Debug.Log("[XR8Manager] Preview: Position reset");
                     }
                     if (kb[Key.Escape].wasPressedThisFrame)
@@ -849,8 +856,11 @@ namespace XR8WebAR
                 case DesktopPreviewMode.SimulatedNoise:
                     if (Input.GetKeyDown(KeyCode.R))
                     {
-                        previewTargetDistance = 2f;
-                        previewTargetOffset = Vector2.zero;
+                        if (arCamera != null)
+                        {
+                            previewTargetWorldPos = arCamera.transform.position + arCamera.transform.forward * 2f;
+                            previewTargetWorldRot = Quaternion.LookRotation(-arCamera.transform.forward, Vector3.up);
+                        }
                         Debug.Log("[XR8Manager] Preview: Position reset");
                     }
                     if (Input.GetKeyDown(KeyCode.Escape))
