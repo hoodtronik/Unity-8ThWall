@@ -695,6 +695,24 @@ namespace XR8WebAR
             float speed = 2.5f * Time.deltaTime;
             float dx = 0f, dy = 0f, dz = 0f;
 
+#if ENABLE_INPUT_SYSTEM
+            var kb = Keyboard.current;
+            if (kb == null) return;
+            if (kb[Key.A].isPressed) dx = -speed;
+            if (kb[Key.D].isPressed) dx = speed;
+            if (kb[Key.W].isPressed) dz = speed;
+            if (kb[Key.S].isPressed) dz = -speed;
+            if (kb[Key.R].isPressed) dy = speed;
+            if (kb[Key.F].isPressed) dy = -speed;
+
+            float angularSpeed = 60f * Time.deltaTime;
+            float dRotX = 0f, dRotY = 0f;
+
+            if (kb[Key.UpArrow].isPressed) dRotX = angularSpeed;
+            if (kb[Key.DownArrow].isPressed) dRotX = -angularSpeed;
+            if (kb[Key.LeftArrow].isPressed) dRotY = -angularSpeed;
+            if (kb[Key.RightArrow].isPressed) dRotY = angularSpeed;
+#else
             if (Input.GetKey(KeyCode.A)) dx = -speed;
             if (Input.GetKey(KeyCode.D)) dx = speed;
             if (Input.GetKey(KeyCode.W)) dz = speed;
@@ -709,6 +727,7 @@ namespace XR8WebAR
             if (Input.GetKey(KeyCode.DownArrow)) dRotX = -angularSpeed;
             if (Input.GetKey(KeyCode.LeftArrow)) dRotY = -angularSpeed;
             if (Input.GetKey(KeyCode.RightArrow)) dRotY = angularSpeed;
+#endif
 
             if (Mathf.Abs(dx) + Mathf.Abs(dy) + Mathf.Abs(dz) > 0.001f)
             {

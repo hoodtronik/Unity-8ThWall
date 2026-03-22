@@ -2,6 +2,9 @@ using System.Collections;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Runtime.InteropServices;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace XR8WebAR
 {
@@ -356,6 +359,22 @@ namespace XR8WebAR
                 // Handle mouse drag for target offset
                 if (previewUseMouse)
                 {
+#if ENABLE_INPUT_SYSTEM
+                    var mouse = Mouse.current;
+                    if (mouse != null && mouse.leftButton.isPressed)
+                    {
+                        var delta = mouse.delta.ReadValue();
+                        previewTargetOffset.x += delta.x * 0.002f;
+                        previewTargetOffset.y += delta.y * 0.002f;
+                    }
+
+                    // Scroll to adjust distance
+                    float scroll = mouse != null ? mouse.scroll.ReadValue().y / 120f : 0f;
+                    if (Mathf.Abs(scroll) > 0.001f)
+                    {
+                        previewTargetDistance = Mathf.Clamp(previewTargetDistance - scroll * 2f, 0.3f, 10f);
+                    }
+#else
                     if (Input.GetMouseButton(0)) // Left click drag
                     {
                         previewTargetOffset.x += Input.GetAxis("Mouse X") * 0.05f;
@@ -368,6 +387,7 @@ namespace XR8WebAR
                     {
                         previewTargetDistance = Mathf.Clamp(previewTargetDistance - scroll * 2f, 0.3f, 10f);
                     }
+#endif
                 }
 
                 // Compute target pose relative to camera
@@ -406,6 +426,39 @@ namespace XR8WebAR
         {
             if (!enableDesktopPreview) return;
 
+#if ENABLE_INPUT_SYSTEM
+            var kb = Keyboard.current;
+            if (kb == null) return;
+
+            // [T] Toggle tracking
+            if (kb[Key.T].wasPressedThisFrame)
+            {
+                if (previewIsTracking)
+                    PreviewStopTracking();
+                else
+                    PreviewStartTracking();
+            }
+
+            // [Tab] Cycle targets
+            if (kb[Key.Tab].wasPressedThisFrame)
+            {
+                PreviewCycleTarget();
+            }
+
+            // [R] Reset position
+            if (kb[Key.R].wasPressedThisFrame)
+            {
+                previewTargetDistance = 2f;
+                previewTargetOffset = Vector2.zero;
+                Debug.Log("[XR8Manager] Preview: Position reset");
+            }
+
+            // [Esc] Stop tracking
+            if (kb[Key.Escape].wasPressedThisFrame)
+            {
+                PreviewStopTracking();
+            }
+#else
             // [T] Toggle tracking
             if (Input.GetKeyDown(KeyCode.T))
             {
@@ -434,6 +487,7 @@ namespace XR8WebAR
             {
                 PreviewStopTracking();
             }
+#endif
         }
 
         private void Update()

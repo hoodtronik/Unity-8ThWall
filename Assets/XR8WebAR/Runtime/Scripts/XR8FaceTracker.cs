@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 using System.Runtime.InteropServices;
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
 
 namespace XR8WebAR
 {
@@ -357,6 +360,23 @@ namespace XR8WebAR
 
         private void PreviewHandleInput()
         {
+#if ENABLE_INPUT_SYSTEM
+            var kb = Keyboard.current;
+            if (kb == null) return;
+
+            if (kb[Key.F].wasPressedThisFrame)
+            {
+                if (previewFaceActive) PreviewFaceLost();
+                else PreviewFaceFound();
+            }
+
+            // Expression presets
+            if (kb[Key.Digit1].wasPressedThisFrame) SetPreviewExpression(0.0f, 1.0f, 1.0f, false); // Neutral
+            if (kb[Key.Digit2].wasPressedThisFrame) SetPreviewExpression(0.1f, 0.8f, 0.8f, true);  // Smile
+            if (kb[Key.Digit3].wasPressedThisFrame) SetPreviewExpression(0.8f, 0.9f, 0.9f, false); // Surprise
+            if (kb[Key.Digit4].wasPressedThisFrame) SetPreviewExpression(0.0f, 0.0f, 1.0f, true);  // Wink
+            if (kb[Key.Digit5].wasPressedThisFrame) SetPreviewExpression(0.6f, 0.7f, 0.7f, false); // Talk
+#else
             if (Input.GetKeyDown(KeyCode.F))
             {
                 if (previewFaceActive) PreviewFaceLost();
@@ -369,6 +389,7 @@ namespace XR8WebAR
             if (Input.GetKeyDown(KeyCode.Alpha3)) SetPreviewExpression(0.8f, 0.9f, 0.9f, false); // Surprise
             if (Input.GetKeyDown(KeyCode.Alpha4)) SetPreviewExpression(0.0f, 0.0f, 1.0f, true);  // Wink
             if (Input.GetKeyDown(KeyCode.Alpha5)) SetPreviewExpression(0.6f, 0.7f, 0.7f, false); // Talk
+#endif
         }
 
         private float previewMouth = 0f;
@@ -400,11 +421,21 @@ namespace XR8WebAR
             
             // Mouse drag adds offset
             Vector2 mouseOffset = Vector2.zero;
+#if ENABLE_INPUT_SYSTEM
+            var mouse = Mouse.current;
+            if (mouse != null && mouse.rightButton.isPressed)
+            {
+                var delta = mouse.delta.ReadValue();
+                mouseOffset.x = delta.x * 0.005f;
+                mouseOffset.y = delta.y * 0.005f;
+            }
+#else
             if (Input.GetMouseButton(1)) // Right click to drag face
             {
                 mouseOffset.x = Input.GetAxis("Mouse X") * 0.1f;
                 mouseOffset.y = Input.GetAxis("Mouse Y") * 0.1f;
             }
+#endif
 
             var facePos = cam.transform.position + cam.transform.forward * 0.5f
                 + cam.transform.right * (swayX + mouseOffset.x)
