@@ -39,7 +39,9 @@ Use `XR8 WebAR > Scene Templates` for pre-configured scenes:
 | Menu Item | Purpose |
 |---|---|
 | `XR8 WebAR > Quick Setup Wizard` | One-click scene setup, validation, and build |
-| `XR8 WebAR > Scene Templates` | 5 pre-built AR scene types |
+| `XR8 WebAR > Scene Templates` | 8 pre-built AR scene types (New/Add To Scene toggle available) |
+| `XR8 WebAR > Image → Video Quick Setup` | Instantly creates an Image Target with an auto-scaled, matching Video Overlay |
+| `XR8 WebAR > Generate All Scene Templates` | Batch create all templates into new scenes |
 | `XR8 WebAR > Import Gaussian Splat` | Drag-drop .ply/.splat → ready prefab |
 | `XR8 WebAR > Image Trackability Analyzer` | Score images 0-100 for tracking quality |
 | `XR8 WebAR > Build WebGL` | Quick build shortcut |
@@ -93,11 +95,20 @@ Two shaders for AR portal effect:
 
 Both must share the same `Stencil Reference` value (default: 1).
 
-## Desktop Preview Controls
+## Desktop Preview Controls & Modes
 
-Enable `Desktop Preview` on XR8Manager, then Play:
+Desktop Preview is activated and configured on the **XR8Manager component Inspector**, NOT the top menu bar.
 
-| Key | Action |
+To use it:
+1. Select the `XR8Manager` GameObject in your scene hierarchy.
+2. In the Inspector, locate the **Preview Mode** dropdown.
+3. Select your desired mode:
+   - **Static** — Camera stays still, use keyboard to move target
+   - **FlyThrough** — Drone-like continuous forward motion
+   - **RecordedPlayback** — Pre-recorded camera path simulation
+   - **SimulatedNoise** — Hand-shake / jitter simulation to test tracker robustness
+
+| Key (Static Mode) | Action |
 |-----|--------|
 | `T` | Toggle tracking on/off |
 | `Tab` | Cycle through image targets |
@@ -108,6 +119,20 @@ Enable `Desktop Preview` on XR8Manager, then Play:
 | `F` | Toggle face found/lost |
 | `1-5` | Expression presets (neutral/smile/surprise/wink/talk) |
 | `Right-Click Drag` | Move face position |
+
+## Image Targets: EXIF Orientation & Video Scaling
+
+### EXIF Orientation
+Sometimes a landscape image displays as portrait in Unity because phone cameras use hidden EXIF tags to rotate pixels, and standard Unity import ignores them.
+**The Fix:**
+- **Auto-Fix:** Any newly imported JPEG with an EXIF tag will now be automatically rotated and fixed by `XR8TextureOrientationFixer`.
+- **Manual Fix:** Right-click any image in the `Assets` folder -> Select `XR8 -> Fix EXIF Orientation` or use the manual 90° rotation options.
+
+### Video Overlay Scaling
+To ensure a Video Overlay perfectly matches an Image Target in WebAR:
+- The video quad's dimensions MUST use the **image's aspect ratio/mesh dimensions**, not the video's. 
+- Use the `XR8 WebAR -> Image → Video Quick Setup` wizard, which automatically calculates the correct exact physical quad size to perfectly align the overlay geometry using standard 1x1 primitive sizing mapped to localScale.
+- Optimal video resolution for WebAR overlays is **1080p (1920x1080)**. 4K is too heavy for mobile web browsers, ensuring smooth playback and fast texture memory upload.
 
 ## Gaussian Splat Pipeline
 
