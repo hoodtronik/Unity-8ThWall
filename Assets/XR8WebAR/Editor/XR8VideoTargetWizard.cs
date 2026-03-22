@@ -447,6 +447,7 @@ namespace XR8WebAR.Editor
             videoPlayer.playOnAwake = false;
             videoPlayer.isLooping = loop;
             videoPlayer.renderMode = VideoRenderMode.MaterialOverride;
+            videoPlayer.aspectRatio = VideoAspectRatio.Stretch; // FORCE the video to fill the image target exactly, no letterboxing
             videoPlayer.targetMaterialRenderer = renderer;
             videoPlayer.targetMaterialProperty = "_BaseMap"; // URP
             if (videoClip != null)
