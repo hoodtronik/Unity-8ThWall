@@ -113,10 +113,32 @@ namespace XR8WebAR.Editor
 
         private void UpdateQuadSizeFromImage()
         {
-            if (!autoSizeFromImage || targetImage == null) return;
-            float aspect = (float)targetImage.width / targetImage.height;
+            if (!autoSizeFromImage) return;
+
+            float aspect = 16f / 9f; // Default to 16:9 if nothing else available
+
+            // Try to get aspect from target image
+            if (targetImage != null)
+            {
+                float imgAspect = (float)targetImage.width / targetImage.height;
+                // If aspect is ~1.0 (square), image likely has EXIF rotation issue
+                // Fall back to video aspect or default landscape
+                if (imgAspect > 0.85f && imgAspect < 1.18f && videoClip != null)
+                {
+                    // Image looks square but probably has EXIF rotation — use video aspect
+                    aspect = (float)videoClip.width / videoClip.height;
+                }
+                else
+                {
+                    aspect = imgAspect;
+                }
+            }
+            else if (videoClip != null)
+            {
+                aspect = (float)videoClip.width / videoClip.height;
+            }
+
             // Default physical size: 20cm on the longest side
-            // This represents the real-world size of the printed target image
             float maxDim = 0.20f;
             if (aspect >= 1f) // Landscape
                 quadSize = new Vector2(maxDim, maxDim / aspect);
@@ -493,9 +515,10 @@ namespace XR8WebAR.Editor
             mesh.RecalculateNormals();
             mf.sharedMesh = mesh;
 
-            // Material with target image
-            var shader = Shader.Find("Unlit/Transparent");
-            if (shader == null) shader = Shader.Find("Sprites/Default");
+            // Material with target image — use URP-compatible shader
+            var shader = Shader.Find("Sprites/Default");
+            if (shader == null) shader = Shader.Find("Universal Render Pipeline/Unlit");
+            if (shader == null) shader = Shader.Find("Unlit/Texture");
             var mat = new Material(shader);
             if (targetImage != null)
             {
