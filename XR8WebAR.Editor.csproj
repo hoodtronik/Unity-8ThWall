@@ -72,6 +72,8 @@
     <Compile Include="Assets\XR8WebAR\Editor\XR8ManagerEditor.cs" />
     <Compile Include="Assets\XR8WebAR\Editor\XR8ImageTargetFactory.cs" />
     <Compile Include="Assets\XR8WebAR\Editor\XR8OptimizeScene.cs" />
+    <Compile Include="Assets\XR8WebAR\Editor\XR8VideoTargetWizard.cs" />
+    <Compile Include="Assets\XR8WebAR\Editor\XR8TextureOrientationFixer.cs" />
     <Compile Include="Assets\XR8WebAR\Editor\XR8MenuItems.cs" />
   </ItemGroup>
   <ItemGroup>

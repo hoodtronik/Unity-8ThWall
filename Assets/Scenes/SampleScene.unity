@@ -910,8 +910,18 @@ MonoBehaviour:
   maxFaces: 1
   targetFrameRate: 30
   enableLighting: 1
-  enableDesktopPreview: 1
+  previewMode: 1
   previewReferenceImage: {fileID: 0}
+  flySpeed: 5
+  flyLookSensitivity: 2
+  autoTrackNearest: 1
+  playbackDataFile: {fileID: 0}
+  playbackLoop: 1
+  playbackSpeed: 1
+  positionJitter: 0.005
+  rotationJitter: 0.5
+  trackingLossChance: 0.002
+  trackingLossDuration: {x: 0.5, y: 2}
   OnEngineReady:
     m_PersistentCalls:
       m_Calls: []

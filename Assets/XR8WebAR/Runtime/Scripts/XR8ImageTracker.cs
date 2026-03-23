@@ -67,6 +67,17 @@ namespace XR8WebAR
             return ids;
         }
 
+        /// <summary>Returns the XR8ImageTarget for the given ID, or null if not found.</summary>
+        public XR8ImageTarget GetTarget(string id)
+        {
+            if (targets.ContainsKey(id)) return targets[id];
+            // Fallback to serialized list (before Start() populates dictionary)
+            if (imageTargets != null)
+                foreach (var t in imageTargets)
+                    if (t.id == id) return t;
+            return null;
+        }
+
         private enum TrackerOrigin { CAMERA_ORIGIN, FIRST_TARGET_ORIGIN }
         [SerializeField] private TrackerOrigin trackerOrigin;
         [SerializeField] private List<string> trackedIds = new List<string>();

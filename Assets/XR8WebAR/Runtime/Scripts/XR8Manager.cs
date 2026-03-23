@@ -448,7 +448,22 @@ namespace XR8WebAR
             if (previewIsTracking || previewActiveTargetId == null) return;
 
             previewIsTracking = true;
-            if (arCamera != null)
+
+            // Use the target's EXISTING scene position and rotation (what the user placed in the editor)
+            // instead of computing a new position/rotation that would override their layout.
+            if (imageTracker != null)
+            {
+                var target = imageTracker.GetTarget(previewActiveTargetId);
+                if (target != null && target.TrackedTransform != null)
+                {
+                    previewTargetWorldPos = target.TrackedTransform.position;
+                    previewTargetWorldRot = target.TrackedTransform.rotation;
+                    Debug.Log("[XR8Manager] Preview: Using existing scene position for '" + previewActiveTargetId + "' at " + previewTargetWorldPos);
+                }
+            }
+            
+            // Fallback: if we couldn't read the target's transform, place 2m in front of camera facing it
+            if (previewTargetWorldPos == Vector3.zero && arCamera != null)
             {
                 previewTargetWorldPos = arCamera.transform.position + arCamera.transform.forward * 2f;
                 previewTargetWorldRot = Quaternion.LookRotation(-arCamera.transform.forward, Vector3.up);
@@ -782,7 +797,35 @@ namespace XR8WebAR
 
                         // Build CSV from recorded data
                         string csv = string.Join(",", cols);
-                        imageTracker.SendMessage("OnTrack", csv, SendMessageOptions.DontRequireReceiver);
+
+                        // Route to appropriate tracker
+                        if (enableWorldTracking && worldTracker != null)
+                        {
+                            // Convert px,py,pz,fx,fy,fz,ux,uy,uz vectors to camera pose CSV: px,py,pz,rx,ry,rz,rw
+                            float px = float.Parse(cols[1], System.Globalization.CultureInfo.InvariantCulture);
+                            float py = float.Parse(cols[2], System.Globalization.CultureInfo.InvariantCulture);
+                            float pz = float.Parse(cols[3], System.Globalization.CultureInfo.InvariantCulture);
+                            
+                            Vector3 fwd = new Vector3(
+                                float.Parse(cols[4], System.Globalization.CultureInfo.InvariantCulture),
+                                float.Parse(cols[5], System.Globalization.CultureInfo.InvariantCulture),
+                                float.Parse(cols[6], System.Globalization.CultureInfo.InvariantCulture));
+                            Vector3 up = new Vector3(
+                                float.Parse(cols[7], System.Globalization.CultureInfo.InvariantCulture),
+                                float.Parse(cols[8], System.Globalization.CultureInfo.InvariantCulture),
+                                float.Parse(cols[9], System.Globalization.CultureInfo.InvariantCulture));
+                            
+                            Quaternion rot = Quaternion.LookRotation(fwd, up);
+
+                            // Format for WorldTracker.OnCameraPose: posX,posY,posZ,rotX,rotY,rotZ,rotW
+                            // Note: WorldTracker.OnCameraPose handles the Z-flip internally for pos and rot
+                            string poseCsv = $"{px},{py},{pz},{-rot.x},{-rot.y},{rot.z},{rot.w}";
+                            worldTracker.SendMessage("OnCameraPose", poseCsv, SendMessageOptions.DontRequireReceiver);
+                        }
+                        else if (enableImageTracking && imageTracker != null)
+                        {
+                            imageTracker.SendMessage("OnTrack", csv, SendMessageOptions.DontRequireReceiver);
+                        }
                     }
                 }
 
