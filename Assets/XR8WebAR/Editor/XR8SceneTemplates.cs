@@ -128,6 +128,33 @@ namespace XR8WebAR.Editor
                 "Creates: Camera, Manager, WorldTracker, GPSTracker, sample pins",
                 () => CreateTemplate_GPSScavengerHunt());
 
+            EditorGUILayout.Space(15);
+            EditorGUILayout.LabelField("Advanced Features", EditorStyles.boldLabel);
+
+            // Template 9: Shared AR (Multi-User)
+            DrawTemplateCard(
+                "🤝 Shared AR (Multi-User)",
+                "Multiple users see the same AR content via WebSocket relay.\n" +
+                "Great for: collaborative AR, shared viewing, multi-player games.",
+                "Creates: Camera, Manager, WorldTracker, SharedSession",
+                () => CreateTemplate_SharedAR());
+
+            // Template 10: Hand Interaction
+            DrawTemplateCard(
+                "✋ Hand Interaction",
+                "Track hand landmarks and detect gestures in AR.\n" +
+                "Great for: touchless interaction, sign language, gesture control.",
+                "Creates: Camera, Manager, WorldTracker, HandTracker",
+                () => CreateTemplate_HandInteraction());
+
+            // Template 11: Sky Replacement
+            DrawTemplateCard(
+                "🌆 Sky Replacement",
+                "Replace the real sky with custom content using segmentation.\n" +
+                "Great for: immersive backdrops, fantasy skies, weather effects.",
+                "Creates: Camera, Manager, WorldTracker, SemanticLayer, SkyQuad",
+                () => CreateTemplate_SkyReplacement());
+
             EditorGUILayout.EndScrollView();
         }
 
@@ -905,6 +932,149 @@ namespace XR8WebAR.Editor
                 "• OnEnteredPin / OnExitedPin events fire at pinRadius (5m)\n" +
                 "• Test in editor with WASD keys to simulate GPS movement\n" +
                 "• Replace spheres with your treasure/landmark 3D models");
+        }
+
+        // =============================================
+        // TEMPLATE 9: SHARED AR (MULTI-USER)
+        // =============================================
+
+        private void CreateTemplate_SharedAR()
+        {
+            var camObj = CreateARCamera();
+            var cam = camObj.GetComponent<Camera>();
+            var xr8Cam = camObj.GetComponent<XR8Camera>();
+
+            var mgrObj = CreateManager(cam, xr8Cam, world: true);
+            var worldObj = CreateWorldTracker();
+
+            var worldTracker = worldObj.GetComponent<XR8WorldTracker>();
+            var worldSo = new SerializedObject(worldTracker);
+            worldSo.FindProperty("trackerCam").objectReferenceValue = cam;
+            worldSo.ApplyModifiedProperties();
+
+            var mgrSo = new SerializedObject(mgrObj.GetComponent<XR8Manager>());
+            mgrSo.FindProperty("worldTracker").objectReferenceValue = worldTracker;
+            mgrSo.ApplyModifiedProperties();
+
+            // SharedSession component
+            var sharedObj = new GameObject("XR8SharedSession");
+            sharedObj.AddComponent<XR8SharedSession>();
+
+            // Sample synced object
+            var syncTarget = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            syncTarget.name = "SharedObject";
+            syncTarget.transform.position = new Vector3(0, 0.5f, 2f);
+            syncTarget.transform.localScale = new Vector3(0.2f, 0.2f, 0.2f);
+            var sRenderer = syncTarget.GetComponent<Renderer>();
+            sRenderer.material = new Material(Shader.Find("Standard"));
+            sRenderer.material.color = new Color(0.2f, 0.7f, 1f);
+            var sCol = syncTarget.GetComponent<Collider>();
+            if (sCol) DestroyImmediate(sCol);
+
+            MarkDirtyAndSelect(sharedObj);
+            ShowResult("Shared AR (Multi-User)",
+                "• Set relay server URL in SharedSession inspector\n" +
+                "• Assign SharedObject to syncedObjects list\n" +
+                "• Call CreateRoom() or JoinRoom(code) from UI\n" +
+                "• Placed/moved objects sync to all peers in room");
+        }
+
+        // =============================================
+        // TEMPLATE 10: HAND INTERACTION
+        // =============================================
+
+        private void CreateTemplate_HandInteraction()
+        {
+            var camObj = CreateARCamera();
+            var cam = camObj.GetComponent<Camera>();
+            var xr8Cam = camObj.GetComponent<XR8Camera>();
+
+            var mgrObj = CreateManager(cam, xr8Cam, world: true);
+            var worldObj = CreateWorldTracker();
+
+            var worldTracker = worldObj.GetComponent<XR8WorldTracker>();
+            var worldSo = new SerializedObject(worldTracker);
+            worldSo.FindProperty("trackerCam").objectReferenceValue = cam;
+            worldSo.ApplyModifiedProperties();
+
+            var mgrSo = new SerializedObject(mgrObj.GetComponent<XR8Manager>());
+            mgrSo.FindProperty("worldTracker").objectReferenceValue = worldTracker;
+            mgrSo.ApplyModifiedProperties();
+
+            // Hand tracker
+            var handObj = new GameObject("XR8HandTracker");
+            handObj.AddComponent<XR8HandTracker>();
+
+            // Sample interactive object
+            var targetObj = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+            targetObj.name = "GrabTarget";
+            targetObj.transform.position = new Vector3(0, 1f, 1.5f);
+            targetObj.transform.localScale = new Vector3(0.15f, 0.15f, 0.15f);
+            var tRenderer = targetObj.GetComponent<Renderer>();
+            tRenderer.material = new Material(Shader.Find("Standard"));
+            tRenderer.material.color = new Color(1f, 0.6f, 0.2f);
+            tRenderer.material.SetFloat("_Metallic", 0.4f);
+
+            MarkDirtyAndSelect(handObj);
+            ShowResult("Hand Interaction",
+                "• Hand landmarks tracked at 30fps in browser\n" +
+                "• Subscribe to OnGestureDetected for pinch/grab/point\n" +
+                "• Use GetJoint() to read individual landmark positions\n" +
+                "• Replace GrabTarget with your interactive content\n" +
+                "• Works with both left and right hands");
+        }
+
+        // =============================================
+        // TEMPLATE 11: SKY REPLACEMENT
+        // =============================================
+
+        private void CreateTemplate_SkyReplacement()
+        {
+            var camObj = CreateARCamera();
+            var cam = camObj.GetComponent<Camera>();
+            var xr8Cam = camObj.GetComponent<XR8Camera>();
+
+            var mgrObj = CreateManager(cam, xr8Cam, world: true);
+            var worldObj = CreateWorldTracker();
+
+            var worldTracker = worldObj.GetComponent<XR8WorldTracker>();
+            var worldSo = new SerializedObject(worldTracker);
+            worldSo.FindProperty("trackerCam").objectReferenceValue = cam;
+            worldSo.ApplyModifiedProperties();
+
+            var mgrSo = new SerializedObject(mgrObj.GetComponent<XR8Manager>());
+            mgrSo.FindProperty("worldTracker").objectReferenceValue = worldTracker;
+            mgrSo.ApplyModifiedProperties();
+
+            // Semantic layer for sky segmentation
+            var semanticObj = new GameObject("XR8SemanticLayer");
+            var semanticLayer = semanticObj.AddComponent<XR8SemanticLayer>();
+
+            // Sky replacement quad (large plane behind everything)
+            var skyQuad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            skyQuad.name = "SkyReplacementQuad";
+            skyQuad.transform.position = new Vector3(0, 5f, 20f);
+            skyQuad.transform.localScale = new Vector3(60f, 30f, 1f);
+            var skyRenderer = skyQuad.GetComponent<Renderer>();
+            var skyShader = Shader.Find("XR8WebAR/SkyReplacement");
+            if (skyShader == null) skyShader = Shader.Find("Unlit/Color");
+            skyRenderer.material = new Material(skyShader);
+            skyRenderer.material.color = new Color(0.4f, 0.1f, 0.7f); // Fantasy purple sky
+            var skyCol = skyQuad.GetComponent<Collider>();
+            if (skyCol) DestroyImmediate(skyCol);
+
+            // Wire semantic layer to sky quad
+            var semSo = new SerializedObject(semanticLayer);
+            semSo.FindProperty("skyReplacementQuad").objectReferenceValue = skyQuad.GetComponent<Renderer>();
+            semSo.ApplyModifiedProperties();
+
+            MarkDirtyAndSelect(semanticObj);
+            ShowResult("Sky Replacement",
+                "• Real sky is replaced with SkyReplacementQuad material\n" +
+                "• Assign a skybox texture or gradient to the quad material\n" +
+                "• Uses XR8WebAR/SkyReplacement shader for masked rendering\n" +
+                "• Combine with person occlusion for full scene control\n" +
+                "• Great for fantasy/sci-fi/weather themed AR experiences");
         }
 
         // =============================================

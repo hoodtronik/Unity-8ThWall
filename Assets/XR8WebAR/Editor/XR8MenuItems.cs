@@ -77,6 +77,100 @@ namespace XR8WebAR.Editor
             Debug.Log("[XR8] Created Face Tracker");
         }
 
+        // =================================================================
+        // Advanced WebAR Components
+        // =================================================================
+
+        [MenuItem("GameObject/XR8 WebAR/Semantic Layer (Sky + Person)", false, 20)]
+        static void CreateSemanticLayer()
+        {
+            var obj = new GameObject("XR8SemanticLayer");
+            Undo.RegisterCreatedObjectUndo(obj, "Create Semantic Layer");
+            obj.AddComponent<XR8SemanticLayer>();
+            Selection.activeGameObject = obj;
+            Debug.Log("[XR8] Created Semantic Layer — configure sky replacement in Inspector");
+        }
+
+        [MenuItem("GameObject/XR8 WebAR/Depth Occlusion", false, 21)]
+        static void CreateDepthOcclusion()
+        {
+            var obj = new GameObject("XR8DepthOcclusion");
+            Undo.RegisterCreatedObjectUndo(obj, "Create Depth Occlusion");
+            obj.AddComponent<XR8DepthOcclusion>();
+            Selection.activeGameObject = obj;
+            Debug.Log("[XR8] Created Depth Occlusion — hides AR objects behind real-world geometry");
+        }
+
+        [MenuItem("GameObject/XR8 WebAR/Hand Tracker", false, 22)]
+        static void CreateHandTracker()
+        {
+            var obj = new GameObject("XR8HandTracker");
+            Undo.RegisterCreatedObjectUndo(obj, "Create Hand Tracker");
+            obj.AddComponent<XR8HandTracker>();
+            Selection.activeGameObject = obj;
+            Debug.Log("[XR8] Created Hand Tracker — 21 landmarks + gesture detection");
+        }
+
+        [MenuItem("GameObject/XR8 WebAR/VPS Tracker", false, 23)]
+        static void CreateVPSTracker()
+        {
+            var obj = new GameObject("XR8VPSTracker");
+            Undo.RegisterCreatedObjectUndo(obj, "Create VPS Tracker");
+            obj.AddComponent<XR8VPSTracker>();
+            Selection.activeGameObject = obj;
+            Debug.Log("[XR8] Created VPS Tracker — configure wayspot IDs in Inspector");
+        }
+
+        [MenuItem("GameObject/XR8 WebAR/AR NavMesh", false, 24)]
+        static void CreateARNavMesh()
+        {
+            var obj = new GameObject("XR8ARNavMesh");
+            Undo.RegisterCreatedObjectUndo(obj, "Create AR NavMesh");
+            obj.AddComponent<XR8ARNavMesh>();
+            Selection.activeGameObject = obj;
+            Debug.Log("[XR8] Created AR NavMesh — requires XR8WorldTracker in scene");
+        }
+
+        [MenuItem("GameObject/XR8 WebAR/Light Estimation", false, 25)]
+        static void CreateLightEstimation()
+        {
+            var obj = new GameObject("XR8LightEstimation");
+            Undo.RegisterCreatedObjectUndo(obj, "Create Light Estimation");
+            obj.AddComponent<XR8LightEstimation>();
+            Selection.activeGameObject = obj;
+            Debug.Log("[XR8] Created Light Estimation — auto-assigns directional light");
+        }
+
+        [MenuItem("GameObject/XR8 WebAR/Object Detector", false, 26)]
+        static void CreateObjectDetector()
+        {
+            var obj = new GameObject("XR8ObjectDetector");
+            Undo.RegisterCreatedObjectUndo(obj, "Create Object Detector");
+            obj.AddComponent<XR8ObjectDetector>();
+            Selection.activeGameObject = obj;
+            Debug.Log("[XR8] Created Object Detector — TF.js COCO-SSD runs in browser");
+        }
+
+        [MenuItem("GameObject/XR8 WebAR/Shared Session", false, 27)]
+        static void CreateSharedSession()
+        {
+            var obj = new GameObject("XR8SharedSession");
+            Undo.RegisterCreatedObjectUndo(obj, "Create Shared Session");
+            obj.AddComponent<XR8SharedSession>();
+            Selection.activeGameObject = obj;
+            Debug.Log("[XR8] Created Shared Session — set relay server URL in Inspector");
+        }
+
+        [MenuItem("GameObject/XR8 WebAR/Session Recorder", false, 28)]
+        static void CreateSessionRecorder()
+        {
+            var obj = new GameObject("XR8SessionRecorder");
+            Undo.RegisterCreatedObjectUndo(obj, "Create Session Recorder");
+            obj.AddComponent<XR8SessionRecorder>();
+            Selection.activeGameObject = obj;
+            Debug.Log("[XR8] Created Session Recorder — records poses for editor playback");
+        }
+
         [MenuItem("GameObject/XR8 WebAR/Create Image Target (from image)", false, 30)]
         static void CreateImageTargetFromMenu()
         {
