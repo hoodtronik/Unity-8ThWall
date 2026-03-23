@@ -61,6 +61,18 @@ public static class WebGLBuilder
             return;
         }
 
+        // Prevent using project root as build path
+        string projectRoot = Path.GetDirectoryName(Application.dataPath).Replace("\\", "/");
+        if (buildPath.Replace("\\", "/").TrimEnd('/') == projectRoot.TrimEnd('/'))
+        {
+            buildPath = Path.Combine(buildPath, DefaultBuildPath);
+            Debug.Log("[WebGLBuilder] Project root selected — using subdirectory: " + buildPath);
+        }
+
+        // Ensure build directory exists
+        if (!Directory.Exists(buildPath))
+            Directory.CreateDirectory(buildPath);
+
         // Build
         BuildPlayerOptions options = new BuildPlayerOptions
         {
@@ -76,13 +88,18 @@ public static class WebGLBuilder
 
         BuildReport report = BuildPipeline.BuildPlayer(options);
 
+        if (report == null)
+        {
+            Debug.LogError("[WebGLBuilder] Build returned null report — check build path and settings.");
+            return;
+        }
+
         if (report.summary.result == BuildResult.Succeeded)
         {
-            Debug.Log("[WebGLBuilder] ✅ Build SUCCEEDED! (" +
+            Debug.Log("[WebGLBuilder] Build SUCCEEDED! (" +
                       report.summary.totalTime.TotalSeconds.ToString("F1") + "s)\n" +
                       "  Output: " + buildPath);
 
-            // Offer to open the folder
             if (EditorUtility.DisplayDialog("Build Complete!",
                 "WebGL build succeeded!\n\nOutput: " + buildPath +
                 "\n\nOpen the build folder?", "Open Folder", "Close"))
@@ -92,7 +109,7 @@ public static class WebGLBuilder
         }
         else
         {
-            Debug.LogError("[WebGLBuilder] ❌ Build FAILED: " + report.summary.result +
+            Debug.LogError("[WebGLBuilder] Build FAILED: " + report.summary.result +
                            " (" + report.summary.totalErrors + " errors)");
         }
     }
