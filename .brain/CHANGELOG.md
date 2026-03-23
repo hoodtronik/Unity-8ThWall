@@ -6,6 +6,24 @@
 
 ---
 
+## 2026-03-22 — Bug Fixes + WebGL Builder (late evening)
+
+**Agent:** Antigravity (Gemini)  
+**Branch:** `feature/advanced-webar`  
+**What was done:**
+- Fixed `XR8ARNavMesh.cs` compile errors: added `Unity.AI.Navigation` to `XR8WebAR.Runtime.asmdef`, wrapped `NavMeshSurface` in `#if XR8_HAS_AI_NAVIGATION`
+- Rewrote `WebGLBuilder.cs`: auto-detects scenes, checks WebGL support, folder picker, prevents project root as build path, null report guard
+- All meta files committed
+- **Console: 0 compile errors**
+
+**TODO next session:**
+- Install WebGL Build Support if not done (Unity Hub → Add Modules)
+- Test build + deploy to GitHub Pages / Netlify
+- Convai NavMeshAgent on-device testing
+- Test advanced features on phone
+
+---
+
 ## 2026-03-22 — Advanced WebAR Features Batch 2 (evening, continued)
 
 **Agent:** Antigravity (Gemini)  
