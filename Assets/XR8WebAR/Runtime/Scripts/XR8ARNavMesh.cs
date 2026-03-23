@@ -3,6 +3,10 @@ using UnityEngine.AI;
 using UnityEngine.Events;
 using System.Collections.Generic;
 
+#if XR8_HAS_AI_NAVIGATION
+using Unity.AI.Navigation;
+#endif
+
 namespace XR8WebAR
 {
     /// <summary>
@@ -13,11 +17,7 @@ namespace XR8WebAR
     /// enabling AI characters (like XR8ConvaiCharacter) to walk on real floors
     /// and navigate around obstacles.
     ///
-    /// How it works:
-    ///   1. Listens to XR8WorldTracker surface detection events
-    ///   2. Creates invisible floor planes at detected surface positions
-    ///   3. Bakes a Unity NavMesh at runtime on those planes
-    ///   4. NavMeshAgents (Convai characters) can now walk on real-world floors
+    /// Requires: com.unity.ai.navigation package (auto-detected via asmdef versionDefines).
     ///
     /// Setup:
     ///   1. Add XR8ARNavMesh to any GameObject in the scene
@@ -27,7 +27,6 @@ namespace XR8WebAR
     ///
     /// Unity NavMesh runtime baking is WebGL-compatible.
     /// </summary>
-    [RequireComponent(typeof(NavMeshSurface))]
     public class XR8ARNavMesh : MonoBehaviour
     {
         [Header("World Tracker")]
@@ -60,7 +59,9 @@ namespace XR8WebAR
         [SerializeField] public UnityEvent<int> OnSurfacePlaneCreated; // count
 
         // ━━━ Internal State ━━━
+#if XR8_HAS_AI_NAVIGATION
         private NavMeshSurface navMeshSurface;
+#endif
         private Dictionary<string, GameObject> surfacePlanes = new Dictionary<string, GameObject>();
         private float rebuildTimer;
         private bool needsRebuild;
@@ -96,9 +97,10 @@ namespace XR8WebAR
             hasBuiltOnce = false;
             needsRebuild = false;
 
-            // Clear NavMesh
+#if XR8_HAS_AI_NAVIGATION
             if (navMeshSurface != null)
                 navMeshSurface.RemoveData();
+#endif
 
             Debug.Log("[XR8ARNavMesh] NavMesh cleared");
         }
@@ -107,6 +109,7 @@ namespace XR8WebAR
 
         private void Awake()
         {
+#if XR8_HAS_AI_NAVIGATION
             navMeshSurface = GetComponent<NavMeshSurface>();
             if (navMeshSurface == null)
                 navMeshSurface = gameObject.AddComponent<NavMeshSurface>();
@@ -115,6 +118,10 @@ namespace XR8WebAR
             navMeshSurface.collectObjects = CollectObjects.Children;
             navMeshSurface.useGeometry = NavMeshCollectGeometry.PhysicsColliders;
             navMeshSurface.agentTypeID = agentTypeId;
+#else
+            Debug.LogWarning("[XR8ARNavMesh] AI Navigation package not detected. " +
+                "Install 'com.unity.ai.navigation' from Package Manager for full NavMesh support.");
+#endif
 
             // Create debug material
             debugMaterial = new Material(Shader.Find("Unlit/Color"));
@@ -215,14 +222,12 @@ namespace XR8WebAR
 
         private void CreateSurfacePlane(string id, Vector3 position)
         {
-            // Create a flat plane at the surface position
             var plane = GameObject.CreatePrimitive(PrimitiveType.Plane);
             plane.name = "NavSurface_" + id;
             plane.transform.SetParent(transform);
             plane.transform.position = position;
-            plane.transform.localScale = Vector3.one * (tileSizeMeters / 10f); // Unity planes are 10x10 by default
+            plane.transform.localScale = Vector3.one * (tileSizeMeters / 10f);
 
-            // Set material based on debug mode
             var renderer = plane.GetComponent<MeshRenderer>();
             if (showDebugPlanes)
             {
@@ -230,11 +235,8 @@ namespace XR8WebAR
             }
             else
             {
-                renderer.enabled = false; // Completely invisible
+                renderer.enabled = false;
             }
-
-            // Keep the collider for NavMesh baking
-            // NavMeshSurface.useGeometry = PhysicsColliders needs this
 
             surfacePlanes[id] = plane;
             needsRebuild = true;
@@ -248,6 +250,11 @@ namespace XR8WebAR
 
         private void BuildNavMesh()
         {
+#if !XR8_HAS_AI_NAVIGATION
+            Debug.LogWarning("[XR8ARNavMesh] Cannot build — AI Navigation package not installed");
+            needsRebuild = false;
+            return;
+#else
             if (surfacePlanes.Count < minSurfacesForBuild)
             {
                 Debug.Log("[XR8ARNavMesh] Waiting for more surfaces... (" +
@@ -270,6 +277,7 @@ namespace XR8WebAR
                 OnNavMeshUpdated?.Invoke();
                 Debug.Log("[XR8ARNavMesh] NavMesh updated (" + surfacePlanes.Count + " surfaces)");
             }
+#endif
         }
 
         // ━━━ Debug Visualization ━━━

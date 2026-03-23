@@ -6,6 +6,23 @@
 
 ---
 
+## 2026-03-22 — Advanced WebAR Features Batch 2 (evening, continued)
+
+**Agent:** Antigravity (Gemini)  
+**Branch:** `feature/advanced-webar`  
+**Commit:** `6b1a3a5`  
+**What was done:**
+- PersonOcclusion.shader: depth-write shader using semantic person mask
+- XR8LightEstimation: auto-adjust scene lighting from camera analysis
+- XR8SessionRecorder: record camera poses for editor playback (CSV download)
+- XR8ObjectDetector: TF.js COCO-SSD object detection in browser
+- XR8SharedSession: multi-user WebAR via WebSocket relay
+- XR8MenuItems.cs: +9 GameObject menu items for all advanced components
+- XR8SceneTemplates.cs: +3 templates (Shared AR, Hand Interaction, Sky Replacement)
+- **Total:** 11 files, ~1,600 lines
+
+---
+
 ## 2026-03-22 — Advanced WebAR Features (evening)
 
 **Agent:** Antigravity (Gemini)  

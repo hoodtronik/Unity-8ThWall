@@ -2,7 +2,8 @@
     "name": "XR8WebAR.Runtime",
     "rootNamespace": "XR8WebAR",
     "references": [
-        "Unity.InputSystem"
+        "Unity.InputSystem",
+        "Unity.AI.Navigation"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
@@ -16,6 +17,11 @@
             "name": "com.unity.inputsystem",
             "expression": "",
             "define": "XR8_HAS_INPUT_SYSTEM"
+        },
+        {
+            "name": "com.unity.ai.navigation",
+            "expression": "",
+            "define": "XR8_HAS_AI_NAVIGATION"
         }
     ],
     "noEngineReferences": false
